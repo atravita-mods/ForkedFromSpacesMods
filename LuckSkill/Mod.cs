@@ -23,7 +23,7 @@ using SObject = StardewValley.Object;
 
 namespace LuckSkill
 {
-    internal class Mod : StardewModdingAPI.Mod, IAssetEditor
+    internal class Mod : StardewModdingAPI.Mod
     {
         /*********
         ** Fields
@@ -61,6 +61,7 @@ namespace LuckSkill
             helper.Events.GameLoop.DayStarted += this.OnDayStarted;
             helper.Events.GameLoop.DayEnding += this.OnDayEnding;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+            helper.Events.Content.AssetRequested += this.OnAssetRequested;
 
             SpaceEvents.ChooseNightlyFarmEvent += this.ChangeFarmEvent;
 
@@ -72,28 +73,27 @@ namespace LuckSkill
             this.CheckForAllProfessions();
         }
 
-        /// <inheritdoc />
-        public override object GetApi()
+        private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
         {
-            return new LuckSkillApi();
-        }
-
-        public bool CanEdit<T>(IAssetInfo asset)
-        {
-            return asset.AssetNameEquals("Strings\\UI");
-        }
-
-        public void Edit<T>(IAssetData asset)
-        {
-            var data = asset.AsDictionary<string, string>().Data;
-
-            foreach (IProfession profession in this.GetProfessions().Values)
+            if (e.NameWithoutLocale.IsEquivalentTo(@"Strings\UI"))
             {
-                string internalKey = this.Helper.Reflection.GetMethod(typeof(LevelUpMenu), "getProfessionName").Invoke<string>(profession.Id);
-                data.Add($"LevelUp_ProfessionName_{internalKey}", profession.Name);
-                data.Add($"LevelUp_ProfessionDescription_{internalKey}", profession.Description);
+                e.Edit((asset) =>
+                {
+                    var data = asset.AsDictionary<string, string>().Data;
+
+                    foreach (IProfession profession in this.GetProfessions().Values)
+                    {
+                        string internalKey = this.Helper.Reflection.GetMethod(typeof(LevelUpMenu), "getProfessionName").Invoke<string>(profession.Id);
+                        data.Add($"LevelUp_ProfessionName_{internalKey}", profession.Name);
+                        data.Add($"LevelUp_ProfessionDescription_{internalKey}", profession.Description);
+                    }
+                },
+                AssetEditPriority.Default);
             }
         }
+
+        /// <inheritdoc />
+        public override object GetApi() => new LuckSkillApi();
 
         /// <summary>Get the available Luck professions.</summary>
         public IDictionary<int, IProfession> GetProfessions()
@@ -145,7 +145,6 @@ namespace LuckSkill
             }.ToDictionary(p => p.Id);
         }
 
-
         /*********
         ** Private methods
         *********/
@@ -162,7 +161,7 @@ namespace LuckSkill
             }
             if (Game1.player.professions.Contains(Mod.LuckyProfessionId))
             {
-                Random r = new Random((int)(Game1.uniqueIDForThisGame + Game1.stats.DaysPlayed * 3));
+                Random r = new((int)(Game1.uniqueIDForThisGame + Game1.stats.DaysPlayed * 3));
                 if (r.NextDouble() <= 0.20)
                 {
                     Game1.player.team.sharedDailyLuck.Value = 0.12;
@@ -175,13 +174,9 @@ namespace LuckSkill
             }
             if (Game1.player.professions.Contains(Mod.PopularHelperProfessionId) && Game1.questOfTheDay == null)
             {
-                if (Utility.isFestivalDay(Game1.dayOfMonth, Game1.currentSeason) || Utility.isFestivalDay(Game1.dayOfMonth + 1, Game1.currentSeason))
+                if (!Utility.isFestivalDay(Game1.dayOfMonth, Game1.currentSeason) &&  !Utility.isFestivalDay(Game1.dayOfMonth + 1, Game1.currentSeason))
                 {
-                    // Vanilla code doesn't put quests on these days.
-                }
-                else
-                {
-                    Quest quest = null;
+                    Quest? quest = null;
                     for (uint i = 0; i < 2 && quest == null; ++i)
                     {
                         Game1.stats.daysPlayed += i * 999999; // To rig the rng to not just give the same results.
