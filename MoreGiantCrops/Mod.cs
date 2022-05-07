@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace MoreGiantCrops
     internal class Mod : StardewModdingAPI.Mod
     {
         public static Mod Instance;
-        public static Dictionary<int, Texture2D> Sprites = new();
+        public static Dictionary<int, Lazy<Texture2D>> Sprites = new();
 
         public override void Entry(IModHelper helper)
         {
@@ -25,14 +26,13 @@ namespace MoreGiantCrops
             foreach (string path in Directory.EnumerateFiles(Path.Combine(this.Helper.DirectoryPath, "assets"), "*.png"))
             {
                 string filename = Path.GetFileName(path);
-                if (!int.TryParse(filename.Split('.')[0], out int id))
+                if (!int.TryParse(Path.GetFileNameWithoutExtension(filename), out int id))  
                 {
                     Log.Error("Bad PNG: " + filename);
                     continue;
                 }
                 Log.Trace("Found PNG: " + filename);
-                var tex = helper.Content.Load<Texture2D>($"assets/{filename}");
-                Mod.Sprites.Add(id, tex);
+                Mod.Sprites.Add(id, new Lazy<Texture2D>(()=> Instance.Helper.ModContent.Load<Texture2D>($"assets/{filename}")));
             }
 
             if (!Mod.Sprites.Any())
