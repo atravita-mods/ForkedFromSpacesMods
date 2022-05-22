@@ -31,7 +31,7 @@ namespace ContentPatcherAnimations.Framework
         private readonly IReflectedProperty<string> FromAssetProperty;
 
         /// <summary>The underlying patch's <c>TargetAsset</c> property.</summary>
-        private readonly IReflectedProperty<string> TargetAssetProperty;
+        private readonly IReflectedProperty<IAssetName?> TargetAssetProperty;
 
         /// <summary>The underlying patch's <c>FromArea</c> field.</summary>
         private readonly IReflectedField<object> FromAreaProperty;
@@ -62,7 +62,7 @@ namespace ContentPatcherAnimations.Framework
         public bool IsActive { get; protected set; }
 
         /// <summary>The normalized target asset name.</summary>
-        public string TargetName { get; protected set; }
+        public IAssetName? TargetName { get; protected set; }
 
         /// <summary>The texture to which the patch applies.</summary>
         public Texture2D Target { get; protected set; }
@@ -101,7 +101,7 @@ namespace ContentPatcherAnimations.Framework
             this.IsReadyProperty = reflection.GetProperty<bool>(patch, "IsReady");
             this.IsAppliedProperty = reflection.GetProperty<bool>(patch, "IsApplied");
             this.FromAssetProperty = reflection.GetProperty<string>(patch, "FromAsset");
-            this.TargetAssetProperty = reflection.GetProperty<string>(patch, "TargetAsset");
+            this.TargetAssetProperty = reflection.GetProperty<IAssetName>(patch, "TargetAsset");
             this.FromAreaProperty = reflection.GetField<object>(patch, "FromArea");
             this.ToAreaProperty = reflection.GetField<object>(patch, "ToArea");
 
@@ -133,10 +133,6 @@ namespace ContentPatcherAnimations.Framework
                         this.TargetName = this.TargetAssetProperty.GetValue();
                         this.FromArea = this.GetRectangleFromPatch(this.FromAreaProperty) ?? Rectangle.Empty;
                         this.ToArea = this.GetRectangleFromPatch(this.ToAreaProperty) ?? new Rectangle(0, 0, this.FromArea.Width, this.FromArea.Height);
-
-                        this.TargetName = !string.IsNullOrWhiteSpace(this.TargetName)
-                            ? PathUtilities.NormalizeAssetName(this.TargetName)
-                            : null;
                     }
                     else
                         this.Clear();
@@ -222,7 +218,7 @@ namespace ContentPatcherAnimations.Framework
         {
             try
             {
-                string assetName = PathUtilities.NormalizeAssetName(this.TargetAssetProperty.GetValue());
+                string assetName = this.TargetAssetProperty.GetValue().BaseName;
 
                 if (assetName == PathUtilities.NormalizeAssetName("TileSheets/tools"))
                 {

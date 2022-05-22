@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SpaceCore;
 using SpaceShared;
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.GameData.Crafting;
 
@@ -18,7 +19,7 @@ namespace JsonAssets.Framework
         private readonly Dictionary<string, Injector> Files;
         public ContentInjector1()
         {
-            Func<string, string> normalize = Mod.instance.Helper.Content.NormalizeAssetName;
+            Func<string, string> normalize = PathUtilities.NormalizeAssetName;
 
             //normalize with 
             this.Files = new Dictionary<string, Injector>
@@ -49,7 +50,7 @@ namespace JsonAssets.Framework
 
         public void InvalidateUsed()
         {
-            Mod.instance.Helper.Content.InvalidateCache(asset => this.Files.ContainsKey(asset.AssetName));
+            Mod.instance.Helper.GameContent.InvalidateCache(asset => this.Files.ContainsKey(asset.AssetName));
         }
 
         public bool CanEdit<T>(IAssetInfo asset)
@@ -62,7 +63,7 @@ namespace JsonAssets.Framework
             if (!Mod.instance.DidInit)
                 return;
 
-            this.Files[asset.AssetName](asset);
+            this.Files[asset.NameWithoutLocale.BaseName](asset);
         }
 
         private void InjectDataObjectInformation(IAssetData asset)
@@ -72,8 +73,12 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to objects: {obj.GetObjectId()}: {obj.GetObjectInformation()}");
-                    data.Add(obj.GetObjectId(), obj.GetObjectInformation());
+                    string objinfo = obj.GetObjectInformation().ToString();
+                    Log.Verbose($"Injecting to objects: {obj.GetObjectId()}: {objinfo}");
+                    if (!data.TryAdd(obj.GetObjectId(), objinfo))
+                    {
+                        Log.Error($"{obj.GetObjectId()} is a duplicate???");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -106,8 +111,12 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to crops: {crop.GetSeedId()}: {crop.GetCropInformation()}");
-                    data.Add(crop.GetSeedId(), crop.GetCropInformation());
+                    string cropinfo = crop.GetCropInformation().ToString();
+                    Log.Verbose($"Injecting to crops: {crop.GetSeedId()}: {cropinfo}");
+                    if (!data.TryAdd(crop.GetSeedId(), cropinfo))
+                    {
+                        Log.Error($"Crop {crop.GetSeedId()} already exists!");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -122,8 +131,9 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to fruit trees: {fruitTree.GetSaplingId()}: {fruitTree.GetFruitTreeInformation()}");
-                    data.Add(fruitTree.GetSaplingId(), fruitTree.GetFruitTreeInformation());
+                    string treeinfo = fruitTree.GetFruitTreeInformation();
+                    Log.Verbose($"Injecting to fruit trees: {fruitTree.GetSaplingId()}: {treeinfo}");
+                    data.Add(fruitTree.GetSaplingId(), treeinfo);
                 }
                 catch (Exception e)
                 {
@@ -142,8 +152,12 @@ namespace JsonAssets.Framework
                         continue;
                     if (obj.Category != ObjectCategory.Cooking)
                         continue;
-                    Log.Verbose($"Injecting to cooking recipes: {obj.Name}: {obj.Recipe.GetRecipeString(obj)}");
-                    data.Add(obj.Name, obj.Recipe.GetRecipeString(obj));
+                    string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
+                    Log.Verbose($"Injecting to cooking recipes: {obj.Name}: {recipestring}");
+                    if (!data.TryAdd(obj.Name, recipestring))
+                    {
+                        Log.Error($"Recipe for {obj.Name} already seems to exist?");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -162,8 +176,12 @@ namespace JsonAssets.Framework
                         continue;
                     if (obj.Category == ObjectCategory.Cooking)
                         continue;
-                    Log.Verbose($"Injecting to crafting recipes: {obj.Name}: {obj.Recipe.GetRecipeString(obj)}");
-                    data.Add(obj.Name, obj.Recipe.GetRecipeString(obj));
+                    string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
+                    Log.Verbose($"Injecting to crafting recipes: {obj.Name}: {recipestring}");
+                    if (!data.TryAdd(obj.Name, recipestring))
+                    {
+                        Log.Error($"Recipe for {obj.Name} already seems to exist?");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -176,8 +194,12 @@ namespace JsonAssets.Framework
                 {
                     if (big.Recipe == null)
                         continue;
-                    Log.Verbose($"Injecting to crafting recipes: {big.Name}: {big.Recipe.GetRecipeString(big)}");
-                    data.Add(big.Name, big.Recipe.GetRecipeString(big));
+                    string recipestring = big.Recipe.GetRecipeString(big).ToString();
+                    Log.Verbose($"Injecting to crafting recipes: {big.Name}: {recipestring}");
+                    if (!data.TryAdd(big.Name, recipestring))
+                    {
+                        Log.Error($"Recipe for {big.Name} already seems to exist?");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -224,8 +246,12 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to weapons: {weapon.GetWeaponId()}: {weapon.GetWeaponInformation()}");
-                    data.Add(weapon.GetWeaponId(), weapon.GetWeaponInformation());
+                    string weaponData = weapon.GetWeaponInformation();
+                    Log.Verbose($"Injecting to weapons: {weapon.GetWeaponId()}: {weaponData}");
+                    if (!data.TryAdd(weapon.GetWeaponId(), weaponData))
+                    {
+                        Log.Error($"{weapon.GetWeaponId()} appears to be a duplicate?");
+                    }
                 }
                 catch (Exception e)
                 {

@@ -14,7 +14,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Events;
-using StardewValley.Locations;
 using StardewValley.Menus;
 using StardewValley.Objects;
 using StardewValley.Quests;
@@ -29,8 +28,8 @@ namespace LuckSkill
         ** Fields
         *********/
         private bool HasAllProfessions;
-        private readonly List<int> LuckProfessions5 = new() { Mod.FortunateProfessionId, Mod.PopularHelperProfessionId };
-        private readonly List<int> LuckProfessions10 = new() { Mod.LuckyProfessionId, Mod.UnUnluckyProfessionId, Mod.ShootingStarProfessionId, Mod.SpiritChildProfessionId };
+        private static readonly int[] LuckProfessions5 = new[] { Mod.FortunateProfessionId, Mod.PopularHelperProfessionId };
+        private static readonly int[] LuckProfessions10 = new[]{ Mod.LuckyProfessionId, Mod.UnUnluckyProfessionId, Mod.ShootingStarProfessionId, Mod.SpiritChildProfessionId };
 
 
         /*********
@@ -79,7 +78,7 @@ namespace LuckSkill
             {
                 e.Edit((asset) =>
                 {
-                    var data = asset.AsDictionary<string, string>().Data;
+                    IDictionary<string, string> data = asset.AsDictionary<string, string>().Data;
 
                     foreach (IProfession profession in this.GetProfessions().Values)
                     {
@@ -172,11 +171,11 @@ namespace LuckSkill
                 if (Game1.player.team.sharedDailyLuck.Value < 0)
                     Game1.player.team.sharedDailyLuck.Value = 0;
             }
-            if (Game1.player.professions.Contains(Mod.PopularHelperProfessionId) && Game1.questOfTheDay == null)
+            if (Game1.player.professions.Contains(Mod.PopularHelperProfessionId) && Game1.questOfTheDay is null)
             {
-                if (!Utility.isFestivalDay(Game1.dayOfMonth, Game1.currentSeason) &&  !Utility.isFestivalDay(Game1.dayOfMonth + 1, Game1.currentSeason))
+                if (!Utility.isFestivalDay(Game1.dayOfMonth, Game1.currentSeason) && !Utility.isFestivalDay(Game1.dayOfMonth + 1, Game1.currentSeason))
                 {
-                    Quest? quest = null;
+                    Quest quest = null;
                     for (uint i = 0; i < 2 && quest == null; ++i)
                     {
                         Game1.stats.daysPlayed += i * 999999; // To rig the rng to not just give the same results.
@@ -204,72 +203,63 @@ namespace LuckSkill
             if (Game1.player.professions.Contains(Mod.SpiritChildProfessionId))
             {
                 int rolls = 0;
-                foreach (string friendKey in Game1.player.friendshipData.Keys)
+                foreach (Friendship data in Game1.player.friendshipData.Values)
                 {
-                    var data = Game1.player.friendshipData[friendKey];
                     if (data.GiftsToday > 0)
                         rolls++;
                 }
 
-                Random r = new Random((int)(Game1.uniqueIDForThisGame + Game1.stats.DaysPlayed));
+                Random r = new((int)(Game1.uniqueIDForThisGame + Game1.stats.DaysPlayed));
                 while (rolls-- > 0)
                 {
                     if (r.NextDouble() > 0.15)
                         continue;
                     rolls = 0;
 
+                    if (r.Next() <= 0.05 && Game1.player.addItemToInventoryBool(new SObject(SObject.prismaticShardIndex, 1)))
+                    {
+                        Game1.showGlobalMessage(I18n.JunimoRewards_PrismaticShard());
+                        continue;
+                    }
+
                     void AdvanceCrops()
                     {
-                        List<GameLocation> locs = new List<GameLocation>();
-                        locs.AddRange(Game1.locations);
-                        for (int i = 0; i < locs.Count; ++i)
+                        Utility.ForAllLocations(static (GameLocation loc) =>
                         {
-                            GameLocation loc = locs[i];
-                            if (loc == null) // From buildings without a valid indoors
-                                continue;
-                            if (loc is BuildableGameLocation bgl)
-                                locs.AddRange(bgl.buildings.Select(b => b.indoors.Value));
-
-                            foreach (var entry in loc.objects.Pairs.ToList())
+                            foreach ((Vector2 key, SObject obj) in loc.objects.Pairs)
                             {
-                                var obj = entry.Value;
-                                if (obj is IndoorPot pot)
+                                if (obj is IndoorPot pot && pot.hoeDirt.Value is HoeDirt dirt && dirt.crop is Crop crop && !crop.fullyGrown.Value)
                                 {
-                                    var dirt = pot.hoeDirt.Value;
-                                    if (dirt.crop == null || dirt.crop.fullyGrown.Value)
-                                        continue;
-
-                                    dirt.crop.newDay(HoeDirt.watered, dirt.fertilizer.Value, (int)entry.Key.X, (int)entry.Key.Y, loc);
+                                    crop.newDay(HoeDirt.watered, dirt.fertilizer.Value, (int)key.X, (int)key.Y, loc);
                                 }
                             }
 
-                            foreach (var entry in loc.terrainFeatures.Pairs.ToList())
+                            foreach ((Vector2 key, TerrainFeature tf) in loc.terrainFeatures.Pairs)
                             {
-                                var tf = entry.Value;
                                 if (tf is HoeDirt dirt)
                                 {
                                     if (dirt.crop == null || dirt.crop.fullyGrown.Value)
                                         continue;
 
-                                    dirt.crop.newDay(HoeDirt.watered, dirt.fertilizer.Value, (int)entry.Key.X, (int)entry.Key.Y, loc);
+                                    dirt.crop.newDay(HoeDirt.watered, dirt.fertilizer.Value, (int)key.X, (int)key.Y, loc);
                                 }
                                 else if (tf is FruitTree ftree)
                                 {
-                                    ftree.dayUpdate(loc, entry.Key);
+                                    ftree.dayUpdate(loc, key);
                                 }
                                 else if (tf is Tree tree)
                                 {
-                                    tree.dayUpdate(loc, entry.Key);
+                                    tree.dayUpdate(loc, key);
                                 }
                             }
-                        }
+                        });
 
                         Game1.showGlobalMessage(I18n.JunimoRewards_GrowCrops());
                     }
 
                     void AdvanceBarn(AnimalHouse house)
                     {
-                        foreach (var animal in house.Animals.Values)
+                        foreach (FarmAnimal animal in house.Animals.Values)
                         {
                             animal.friendshipTowardFarmer.Value = Math.Min(1000, animal.friendshipTowardFarmer.Value + 100);
                         }
@@ -280,7 +270,7 @@ namespace LuckSkill
                     void GrassAndFences()
                     {
                         var farm = Game1.getFarm();
-                        foreach (var entry in farm.terrainFeatures.Values)
+                        foreach (TerrainFeature entry in farm.terrainFeatures.Values)
                         {
                             if (entry is Grass grass)
                             {
@@ -288,7 +278,7 @@ namespace LuckSkill
                             }
                         }
 
-                        foreach (var entry in farm.Objects.Values)
+                        foreach (SObject entry in farm.Objects.Values)
                         {
                             if (entry is Fence fence)
                             {
@@ -299,45 +289,28 @@ namespace LuckSkill
                         Game1.showGlobalMessage(I18n.JunimoRewards_GrowGrass());
                     }
 
-                    if (r.Next() <= 0.05 && Game1.player.addItemToInventoryBool(new SObject(SObject.prismaticShardIndex, 1)))
+                    List<AnimalHouse> animalHouses = new List<AnimalHouse>();
+                    Utility.ForAllLocations((GameLocation loc) =>
                     {
-                        Game1.showGlobalMessage(I18n.JunimoRewards_PrismaticShard());
-                        continue;
-                    }
-
-                    var animalHouses = new List<AnimalHouse>();
-                    foreach (var loc in Game1.locations)
-                    {
-                        if (loc is BuildableGameLocation bgl)
+                        if (loc is AnimalHouse ah)
                         {
-                            foreach (var building in bgl.buildings)
+                            if (!ah.Animals.Values.All((a) => a.friendshipTowardFarmer.Value >=1000))
                             {
-                                if (building.indoors.Value is AnimalHouse ah)
-                                {
-                                    bool foundAnimalWithRoomForGrowth = false;
-                                    foreach (var animal in ah.Animals.Values)
-                                    {
-                                        if (animal.friendshipTowardFarmer.Value < 1000)
-                                        {
-                                            foundAnimalWithRoomForGrowth = true;
-                                            break;
-                                        }
-                                    }
-                                    if (foundAnimalWithRoomForGrowth)
-                                        animalHouses.Add(ah);
-                                }
+                                animalHouses.Add(ah);
                             }
                         }
-                    }
+                    });
 
                     List<Action> choices = new() { AdvanceCrops, AdvanceCrops, AdvanceCrops };
-                    foreach (var ah in animalHouses)
+                    foreach (AnimalHouse ah in animalHouses)
                     {
                         choices.Add(() => AdvanceBarn(ah));
                     }
                     choices.Add(GrassAndFences);
 
                     choices[r.Next(choices.Count)]();
+
+                    return;
                 }
             }
         }
@@ -381,11 +354,8 @@ namespace LuckSkill
 
                 string text = "";
                 string text2 = "";
-                bool flag = false;
-                int num5 = -1;
-
-                flag = (Game1.player.LuckLevel > i);
-                num5 = this.GetLuckProfessionForSkill(i + 1);//Game1.player.getProfessionForSkill(5, i + 1);
+                bool flag = (Game1.player.LuckLevel > i);
+                int num5 = this.GetLuckProfessionForSkill(i + 1);
                 object[] args = new object[] { text, text2, LevelUpMenu.getProfessionDescription(num5) };
                 this.Helper.Reflection.GetMethod(skills, "parseProfessionDescription").Invoke(args);
                 text = (string)args[0];
@@ -399,20 +369,9 @@ namespace LuckSkill
                 num2 += Game1.pixelZoom * 6;
             }
             int k = 5;
-            int num6 = k;
-            num6 = num6 switch
-            {
-                1 => 3,
-                3 => 1,
-                _ => num6
-            };
-            string text3 = "";
-            if (Game1.player.LuckLevel > 0)
-            {
-                text3 = I18n.Skill_LevelUp();
-            }
-            var skillAreas = skills.skillAreas;
-            skillAreas.Add(new ClickableTextureComponent(string.Concat(num6), new Rectangle(num3 - Game1.tileSize * 2 - Game1.tileSize * 3 / 4, num4 + k * (Game1.tileSize / 2 + Game1.pixelZoom * 6), Game1.tileSize * 2 + Game1.pixelZoom * 5, 9 * Game1.pixelZoom), string.Concat(num6), text3, null, Rectangle.Empty, 1f));
+            string text3 = Game1.player.LuckLevel > 0 ? I18n.Skill_LevelUp() : string.Empty;
+            List<ClickableTextureComponent> skillAreas = skills.skillAreas;
+            skillAreas.Add(new ClickableTextureComponent(k.ToString(), new Rectangle(num3 - Game1.tileSize * 2 - Game1.tileSize * 3 / 4, num4 + k * (Game1.tileSize / 2 + Game1.pixelZoom * 6), Game1.tileSize * 2 + Game1.pixelZoom * 5, 9 * Game1.pixelZoom), k.ToString(), text3, null, Rectangle.Empty, 1f));
         }
 
         private void DrawLuckSkill(SkillsPage skills)
@@ -438,7 +397,7 @@ namespace LuckSkill
                         text = I18n.Skill_Name();
                     int num4 = Game1.player.LuckLevel;
                     bool flag2 = (Game1.player.addedLuckLevel.Value > 0);
-                    Rectangle empty = new Rectangle(50, 428, 10, 10);
+                    Rectangle empty = new(50, 428, 10, 10);
 
                     if (!text.Equals(""))
                     {
@@ -508,7 +467,7 @@ namespace LuckSkill
 
         private FarmEvent PickFarmEvent()
         {
-            Random random = new Random((int)Game1.stats.DaysPlayed + (int)Game1.uniqueIDForThisGame / 2);
+            Random random = new((int)Game1.stats.DaysPlayed + (int)Game1.uniqueIDForThisGame / 2);
             if (Game1.weddingToday)
                 return null;
             foreach (Farmer onlineFarmer in Game1.getOnlineFarmers())
@@ -572,16 +531,14 @@ namespace LuckSkill
                 // This is that mod's code, too (from ILSpy, anyways). Just trying to give credit where credit is due. :P
                 // Except this only applies for luck professions. Since they don't exist in vanilla AllProfessions doesn't take care of it.
                 var professions = Game1.player.professions;
-                List<List<int>> list = new List<List<int>> { this.LuckProfessions5, this.LuckProfessions10 };
-                foreach (List<int> current in list)
+                List<int[]> list = new() { Mod.LuckProfessions5, Mod.LuckProfessions10 };
+                foreach (int[] current in list)
                 {
-                    bool flag = professions.Intersect(current).Any<int>();
-                    if (flag)
+                    if (professions.Intersect(current).Any())
                     {
                         foreach (int current2 in current)
                         {
-                            bool flag2 = !professions.Contains(current2);
-                            if (flag2)
+                            if (!professions.Contains(current2))
                             {
                                 professions.Add(current2);
                             }
@@ -623,10 +580,21 @@ namespace LuckSkill
 
         private int GetLuckProfessionForSkill(int level)
         {
-            if (level != 5 && level != 10)
-                return -1;
 
-            List<int> list = (level == 5 ? this.LuckProfessions5 : this.LuckProfessions10);
+            int[] list;
+
+            switch(level)
+            {
+                case 5:
+                    list = Mod.LuckProfessions5;
+                    break;
+                case 10:
+                    list = Mod.LuckProfessions10;
+                    break;
+                default:
+                    return -1;
+            }
+
             foreach (int prof in list)
             {
                 if (Game1.player.professions.Contains(prof))

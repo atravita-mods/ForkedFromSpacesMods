@@ -36,9 +36,11 @@ namespace JsonAssets.Patches
             // The key here though is we try/catch around it when something fails, but don't let the vanilla method run still
             // This way if it fails (like for some reason equipped custom rings do for farmhands when first connecting),
             //  the game will still run.
+
+            // TODO: this should probably be a finalizer.
             try
             {
-                if (Game1.objectInformation == null || __instance.indexInTileSheet.Value == null)
+                if (Game1.objectInformation == null || __instance.indexInTileSheet?.Value == null)
                 {
                     __result = false;
                     return false;

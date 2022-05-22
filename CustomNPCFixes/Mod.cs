@@ -29,7 +29,11 @@ namespace CustomNPCFixes
                 this.Helper.Events.GameLoop.SaveCreated += this.DoNpcFixes;
                 this.Helper.Events.GameLoop.SaveLoaded += this.DoNpcFixes;
 
-                this.Helper.Events.GameLoop.DayStarted += (s, a) => { this.SpawnNpcs(); this.FixSchedules(); }; // See comments in doNpcFixes. This handles conditional spawning.
+                this.Helper.Events.GameLoop.DayStarted += (s, a) =>
+                {
+                    SpawnNpcs();
+                    FixSchedules();
+                }; // See comments in doNpcFixes. This handles conditional spawning.
             }
         }
 
@@ -37,16 +41,16 @@ namespace CustomNPCFixes
         {
             // This needs to be called again so that custom NPCs spawn in locations added after the original call
             //Game1.fixProblems();
-            this.SpawnNpcs();
+            SpawnNpcs();
 
             // Similarly, this needs to be called again so that pathing works.
             NPC.populateRoutesFromLocationToLocationList();
 
             // Schedules for new NPCs don't work the first time.
-            this.FixSchedules();
+            FixSchedules();
         }
 
-        private void SpawnNpcs()
+        private static void SpawnNpcs()
         {
             List<NPC> allCharacters = Utility.getPooledList();
             try
@@ -96,11 +100,11 @@ namespace CustomNPCFixes
             }
         }
 
-        private void FixSchedules()
+        private static void FixSchedules()
         {
-            foreach (var npc in Utility.getAllCharacters())
+            foreach (NPC npc in Utility.getAllCharacters())
             {
-                if (npc.Schedule == null)
+                if (npc.Schedule is null && npc.isVillager())
                 {
                     try
                     {

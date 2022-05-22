@@ -34,10 +34,8 @@ namespace MoreGiantCrops.Patches
         ** Private methods
         *********/
         /// <summary>The method which transpiles <see cref="Crop.newDay"/>.</summary>
-        private static IEnumerable<CodeInstruction> Transpile_NewDay(ILGenerator gen, MethodBase original, IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction>? Transpile_NewDay(ILGenerator gen, MethodBase original, IEnumerable<CodeInstruction> instructions)
         {
-            instructions = instructions.ToArray();
-
             // Copied/modified from Json Assets
             // TODO: Learn how to use ILGenerator
             try
@@ -88,7 +86,7 @@ namespace MoreGiantCrops.Patches
             catch (Exception ex)
             {
                 Log.Error($"Failed in {nameof(Transpile_NewDay)}:\n{ex}");
-                return instructions;
+                return null;
             }
         }
 

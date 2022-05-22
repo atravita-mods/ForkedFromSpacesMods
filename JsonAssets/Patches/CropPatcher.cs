@@ -64,7 +64,7 @@ namespace JsonAssets.Patches
         }
 
         /// <summary>The method which transpiles <see cref="Crop.newDay"/>.</summary>
-        private static IEnumerable<CodeInstruction> Transpile_NewDay(ILGenerator gen, MethodBase original, IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction>? Transpile_NewDay(ILGenerator gen, MethodBase original, IEnumerable<CodeInstruction> instructions)
         {
             instructions = instructions.ToArray();
 
@@ -137,7 +137,7 @@ namespace JsonAssets.Patches
             catch (Exception ex)
             {
                 Log.Error($"Failed in {nameof(Transpile_NewDay)}:\n{ex}");
-                return instructions;
+                return null;
             }
         }
 

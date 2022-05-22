@@ -22,15 +22,5 @@ namespace ContentPatcherAnimations.Framework
         /// <summary>The global animation tick counter.</summary>
         public uint FrameCounter { get; set; }
 
-
-        /*********
-        ** Public methods
-        *********/
-        /// <summary>Raised after the game's selected language changes.</summary>
-        /// <param name="code">The new language code.</param>
-        public void OnLocaleChanged(LocalizedContentManager.LanguageCode code)
-        {
-            this.AssetDrawTracker.OnLocaleChanged(code);
-        }
     }
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using JsonAssets.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -60,37 +61,27 @@ namespace JsonAssets.Data
             return this.Id;
         }
 
-        internal string GetCropInformation()
+        internal StringBuilder GetCropInformation()
         {
-            string str = "";
+            StringBuilder str = new();
             //str += GetProductId() + "/";
-            foreach (int phase in this.Phases)
-            {
-                str += phase + " ";
-            }
-            str = str.Substring(0, str.Length - 1) + "/";
-            foreach (string season in this.Seasons)
-            {
-                str += season + " ";
-            }
-            str = str.Substring(0, str.Length - 1) + "/";
-            str += $"{this.GetCropSpriteIndex()}/{Mod.instance.ResolveObjectId(this.Product)}/{this.RegrowthPhase}/";
-            str += (this.HarvestWithScythe ? "1" : "0") + "/";
+            str.AppendJoin(' ', this.Phases).Append('/')
+               .AppendJoin(' ', this.Seasons).Append('/')
+               .Append($"{this.GetCropSpriteIndex()}/{Mod.instance.ResolveObjectId(this.Product)}/{this.RegrowthPhase}/")
+               .Append(this.HarvestWithScythe ? "1" : "0").Append('/');
             if (this.Bonus != null)
-                str += $"true {this.Bonus.MinimumPerHarvest} {this.Bonus.MaximumPerHarvest} {this.Bonus.MaxIncreasePerFarmLevel} {this.Bonus.ExtraChance}/";
-            else str += "false/";
-            str += (this.TrellisCrop ? "true" : "false") + "/";
+                str.Append($"true {this.Bonus.MinimumPerHarvest} {this.Bonus.MaximumPerHarvest} {this.Bonus.MaxIncreasePerFarmLevel} {this.Bonus.ExtraChance}/");
+            else
+                str.Append("false/");
+            str.Append((this.TrellisCrop ? "true" : "false")).Append('/');
             if (this.Colors.Any())
             {
-                str += "true";
-                foreach (var color in this.Colors)
-                    str += $" {color.R} {color.G} {color.B}";
+                str.Append("true ").AppendJoin(' ', this.Colors.Select(color=>$"{color.R} {color.G} {color.B}"));
             }
             else
-                str += "false";
+                str.Append("false");
             return str;
         }
-
 
         /*********
         ** Private methods

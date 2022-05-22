@@ -101,9 +101,9 @@ namespace JsonAssets.Framework
                 // We can distinguish between vanilla and EPU conditions based on two factors:
                 //   1. EPU adds '!' to invert conditions;
                 //   2. EPU uses readable flags like 'HasCookingRecipe', compared to the game's 1-2 character flags like 'x' or 'Hn'.
-                foreach (string condition in conditions.Split('/'))
+                foreach (string condition in conditions.Split('/', System.StringSplitOptions.TrimEntries))
                 {
-                    string flag = condition.Trim().Split(' ')[0];
+                    string flag = condition.Split(' ')[0];
                     if (flag.StartsWith("!") || flag.Length > 3)
                         return false;
                 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using DynamicGameAssets.Framework;
 using DynamicGameAssets.Framework.ContentPacks;
 using DynamicGameAssets.Game;
@@ -425,8 +426,8 @@ namespace DynamicGameAssets
                 this.RefreshSpritebatchCache();
             }
 
-            this.Helper.Content.InvalidateCache("Data\\CraftingRecipes");
-            this.Helper.Content.InvalidateCache("Data\\CookingRecipes");
+            this.Helper.GameContent.InvalidateCache(@"Data\CraftingRecipes");
+            this.Helper.GameContent.InvalidateCache(@"Data\CookingRecipes");
         }
 
         private void OnMenuChanged(object sender, MenuChangedEventArgs e)
@@ -442,19 +443,19 @@ namespace DynamicGameAssets
 
         private void OnListCommand(string cmd, string[] args)
         {
-            string output = "";
+            StringBuilder sb = new();
             foreach (var cp in Mod.contentPacks)
             {
-                output += cp.Key + ":\n";
+                sb.Append(cp.Key).AppendLine(":");
                 foreach (var entry in cp.Value.items)
                 {
                     if (entry.Value.Enabled)
-                        output += "\t" + entry.Key + "\n";
+                        sb.Append('\t').AppendLine(entry.Key);
                 }
-                output += "\n";
+                sb.AppendLine();
             }
 
-            Log.Info(output);
+            Log.Info(sb.ToString());
         }
 
         private void OnAddCommand(string cmd, string[] args)

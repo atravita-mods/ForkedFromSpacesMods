@@ -39,7 +39,7 @@ namespace DynamicGameAssets
                     0,
                     qty,
                     this.CurrencyId.Value, // Black magic copied
-                    (int)((float)this.Price*Game1.MasterPlayer.difficultyModifier),
+                    (int)(this.Price*Game1.MasterPlayer.difficultyModifier),
                 });
             }
             else
@@ -77,7 +77,7 @@ namespace DynamicGameAssets
                     0,
                     qty,
                     this.CurrencyId.Value, // Black magic copied
-                    (int)((float)this.Price*Game1.MasterPlayer.difficultyModifier),
+                    (int)(this.Price*Game1.MasterPlayer.difficultyModifier),
                 });
             }
             else

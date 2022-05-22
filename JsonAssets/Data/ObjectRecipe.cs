@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text;
 using JsonAssets.Framework;
 using StardewValley;
 
@@ -27,21 +28,22 @@ namespace JsonAssets.Data
         /*********
         ** Public methods
         *********/
-        internal string GetRecipeString(ObjectData parent)
+        internal StringBuilder GetRecipeString(ObjectData parent)
         {
-            string str = "";
+            //string str = "";
+            StringBuilder str = new();
             foreach (var ingredient in this.Ingredients)
-                str += Mod.instance.ResolveObjectId(ingredient.Object) + " " + ingredient.Count + " ";
-            str = str.Substring(0, str.Length - 1);
-            str += $"/what is this for?/{parent.Id} {this.ResultCount}/";
+                str.Append(Mod.instance.ResolveObjectId(ingredient.Object) + " " + ingredient.Count + " ");
+            str.Remove(str.Length - 1, 1);
+            str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/");
             if (parent.Category != ObjectCategory.Cooking)
-                str += "false/";
+                str.Append("false/");
             if (this.SkillUnlockName?.Length > 0 && this.SkillUnlockLevel > 0)
-                str += "/" + this.SkillUnlockName + " " + this.SkillUnlockLevel;
+                str.Append("/" + this.SkillUnlockName + " " + this.SkillUnlockLevel);
             else
-                str += "/null";
+                str.Append("/null");
             if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
-                str += "/" + parent.LocalizedName();
+                str.Append("/" + parent.LocalizedName());
             return str;
         }
 

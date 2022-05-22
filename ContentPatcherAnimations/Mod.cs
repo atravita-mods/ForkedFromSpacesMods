@@ -50,15 +50,23 @@ namespace ContentPatcherAnimations
 
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
-            LocalizedContentManager.OnLanguageChange += this.OnLocaleChanged;
 
-            helper.Content.AssetEditors.Add(new WatchForUpdatesAssetEditor(() => this.ScreenState.AnimatedPatches));
+            helper.Events.Content.AssetReady += this.OnAssetReady;
 
             helper.ConsoleCommands.Add("cpa", "...", this.OnCommand);
 
             HarmonyPatcher.Apply(this,
                 new SpriteBatchPatcher(() => this.ScreenState.AssetDrawTracker)
             );
+        }
+
+        private void OnAssetReady(object sender, AssetReadyEventArgs e)
+        {
+            foreach (PatchData patch in this.ScreenState.AnimatedPatches.Values)
+            {
+                if (patch.TargetName != null && e.NameWithoutLocale.IsEquivalentTo(patch.TargetName))
+                    patch.ForceNextRefresh = true;
+            }
         }
 
 
@@ -97,13 +105,6 @@ namespace ContentPatcherAnimations
         {
             IModInfo modData = this.Helper.ModRegistry.Get("Pathoschild.ContentPatcher");
             this.ContentPatcher = this.GetPropertyValueManually<StardewModdingAPI.Mod>(modData, "Mod");
-        }
-
-        /// <summary>Raised after the game's selected language changes.</summary>
-        /// <param name="code">The new language code.</param>
-        private void OnLocaleChanged(LocalizedContentManager.LanguageCode code)
-        {
-            this.ScreenState.OnLocaleChanged(code);
         }
 
         /// <inheritdoc cref="IGameLoopEvents.UpdateTicked"/>

@@ -35,8 +35,8 @@ namespace SpaceShared
             if ( modIdAndPath == null || modIdAndPath.IndexOf( '/' ) == -1 )
                 return null;
 
-            string packId = modIdAndPath.Substring( 0, modIdAndPath.IndexOf( '/' ) );
-            string path = modIdAndPath.Substring( modIdAndPath.IndexOf( '/' ) + 1 );
+            string packId = modIdAndPath[..modIdAndPath.IndexOf('/')];
+            string path = modIdAndPath[(modIdAndPath.IndexOf('/') + 1)..];
 
             // This is really bad. Pathos don't kill me.
             var modInfo = modRegistry.Get( packId );
