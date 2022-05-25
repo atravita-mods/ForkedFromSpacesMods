@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
+using StardewValley;
 
 namespace ContentPatcherAnimations.Framework
 {
@@ -14,6 +17,9 @@ namespace ContentPatcherAnimations.Framework
         /// <summary>The textures that were drawn recently, indexed by normalized asset name.</summary>
         private readonly Dictionary<IAssetName, AssetDrawData> LastDrawn = new();
 
+        /// <summary>The language suffix for the current language code in asset names, if any.</summary>
+        private string CurrentLanguageSuffix;
+
 
         /*********
         ** Public methods
@@ -23,6 +29,15 @@ namespace ContentPatcherAnimations.Framework
         /// <param name="area">The pixel area that was drawn, or <c>null</c> for the entire texture.</param>
         public void Track(IAssetName assetName, Rectangle? area)
         {
+            /*
+            if (string.IsNullOrWhiteSpace(assetName))
+                return;
+
+            assetName = PathUtilities.NormalizeAssetName(assetName);
+            if (this.CurrentLanguageSuffix != null && assetName.EndsWith(this.CurrentLanguageSuffix, StringComparison.OrdinalIgnoreCase))
+                assetName = assetName[..^this.CurrentLanguageSuffix.Length]; // normalize `assetName.fr-FR` to `assetName`
+            */
+
             if (!this.LastDrawn.TryGetValue(assetName, out AssetDrawData data))
                 this.LastDrawn[assetName] = data = new AssetDrawData(assetName);
 
@@ -51,6 +66,15 @@ namespace ContentPatcherAnimations.Framework
 
             foreach (IAssetName key in expiredKeys)
                 this.LastDrawn.Remove(key);
+        }
+
+        /// <summary>Raised after the game's selected language changes.</summary>
+        /// <param name="code">The new language code.</param>
+        public void OnLocaleChanged(LocalizedContentManager.LanguageCode code)
+        {
+            this.CurrentLanguageSuffix = (code == LocalizedContentManager.LanguageCode.en)
+                ? null
+                : $".{Game1.content.LanguageCodeString(Game1.content.GetCurrentLanguage())}";
         }
     }
 }

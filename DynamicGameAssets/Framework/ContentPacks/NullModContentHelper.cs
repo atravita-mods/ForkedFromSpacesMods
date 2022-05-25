@@ -1,24 +1,24 @@
 using StardewModdingAPI;
 
-namespace DynamicGameAssets.Framework.ContentPacks;
-
-internal class NullModContentHelper : IModContentHelper
+namespace DynamicGameAssets.Framework.ContentPacks
 {
-    public string ModID => string.Empty;
-
-    public IAssetName GetInternalAssetName(string relativePath)
+    internal class NullModContentHelper : IModContentHelper
     {
-        return default;
-    }
+        public string ModID => "null";
 
-    public IAssetData GetPatchHelper<T>(T data, string relativePath = null) where T : notnull
-    {
-        return default;
-    }
+        public IAssetName GetInternalAssetName(string relativePath)
+        {
+            return null; // Probably should implement this kinda...
+        }
 
-    public T Load<T>(string relativePath) where T : notnull
-    {
-        return default;
+        public IAssetData GetPatchHelper<T>(T data, string relativePath = null) where T : notnull
+        {
+            return null; // Probably should implement this kinda...
+        }
+
+        public T Load<T>(string relativePath) where T : notnull
+        {
+            return default(T);
+        }
     }
 }
-
