@@ -34,6 +34,8 @@ namespace CustomNPCFixes
                     SpawnNpcs();
                     FixSchedules();
                 }; // See comments in doNpcFixes. This handles conditional spawning.
+
+                this.Helper.Events.GameLoop.UpdateTicked -= this.OnUpdate;
             }
         }
 
