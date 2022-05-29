@@ -1715,7 +1715,7 @@ namespace JsonAssets
             var dataSpan = datastring.AsSpan();
             foreach (var obj in Game1.objectInformation)
             {
-                if (dataSpan.AreSpansEqual(JAUtils.GetNameFrom(obj.Value)))
+                if (dataSpan.Equals(JAUtils.GetNameFrom(obj.Value), StringComparison.OrdinalIgnoreCase))
                     return obj.Key;
             }
 
@@ -1740,7 +1740,7 @@ namespace JsonAssets
             var dataSpan = datastring.AsSpan();
             foreach (var obj in Game1.clothingInformation)
             {
-                if (dataSpan.AreSpansEqual(JAUtils.GetNameFrom(obj.Value)))
+                if (dataSpan.Equals(JAUtils.GetNameFrom(obj.Value), StringComparison.OrdinalIgnoreCase))
                     return obj.Key;
             }
 

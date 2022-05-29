@@ -64,7 +64,7 @@ namespace JsonAssets.Patches
         }
 
         /// <summary>The method which transpiles <see cref="Crop.newDay"/>.</summary>
-        private static IEnumerable<CodeInstruction>? Transpile_NewDay(ILGenerator gen, MethodBase original, IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpile_NewDay(ILGenerator gen, MethodBase original, IEnumerable<CodeInstruction> instructions)
         {
             instructions = instructions.ToArray();
 

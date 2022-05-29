@@ -20,17 +20,4 @@ internal static class JAUtils
             return data.AsSpan()[..index];
         return new ReadOnlySpan<char>();
     }
-
-    internal static bool AreSpansEqual(this ReadOnlySpan<char> thisSpan, ReadOnlySpan<char> thatSpan)
-    {
-        if (thisSpan.Length != thatSpan.Length)
-            return false;
-        for (int i = 0; i < thisSpan.Length; i++)
-            if (thisSpan[i] != thatSpan[i])
-                return false;
-        return true;
-    }
-
-    internal static bool AreSpansEqual(this ReadOnlySpan<char> thisSpan, string thatstring)
-        => thisSpan.AreSpansEqual(thatstring.AsSpan());
 }
