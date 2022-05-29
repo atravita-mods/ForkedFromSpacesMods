@@ -313,6 +313,9 @@ namespace JsonAssets.Framework
         }
         private void InjectMapsSpringobjects(IAssetData asset)
         {
+            if (Mod.instance.Objects.Count == 0)
+                return;
+
             var tex= asset.AsImage();
             tex.ExtendImage(tex.Data.Width, 4096);
             //Texture2D newTex = new Texture2D(Game1.graphics.GraphicsDevice, oldTex.Width, Math.Max(oldTex.Height, 4096));
@@ -367,6 +370,9 @@ namespace JsonAssets.Framework
 
         private void InjectTileSheetsCrops(IAssetData asset)
         {
+            if (Nod.instance.Crops.Count == 0)
+                return;
+
             var tex = asset.AsImage();
             tex.ExtendImage(tex.Data.Width, 4096);
 
@@ -393,6 +399,9 @@ namespace JsonAssets.Framework
 
         private void InjectTileSheetsFruitTrees(IAssetData asset)
         {
+            if (Mod.instance.FruitTrees.Count == 0)
+                return;
+
             var tex = asset.AsImage();
             tex.ExtendImage(tex.Data.Width, 4096);
 
@@ -419,6 +428,9 @@ namespace JsonAssets.Framework
 
         private void InjectTileSheetsCraftables(IAssetData asset)
         {
+            if (Mod.instance.BigCraftables.Count == 0)
+                return;
+
             var tex = asset.AsImage();
             tex.ExtendImage(tex.Data.Width, 4096);
             Log.Trace($"Big craftables are now ({tex.Data.Width}, {tex.Data.Height})");
@@ -453,6 +465,9 @@ namespace JsonAssets.Framework
 
         private void InjectCharactersFarmerHats(IAssetData asset)
         {
+            if (Mod.instance.Hats.Count == 0)
+                return;
+                
             var image = asset.AsImage();
             image.ExtendImage(image.Data.Width, 4096);
             Log.Trace($"Hats are now ({image.Data.Width}, {image.Data.Width})");
@@ -480,6 +495,9 @@ namespace JsonAssets.Framework
 
         private void InjectTileSheetsWeapons(IAssetData asset)
         {
+            if (Mod.instance.Weapons.Count == 0)
+                return;
+
             var tex = asset.AsImage();
             tex.ExtendImage(tex.Data.Width, 4096);
             Log.Trace($"Weapons are now ({tex.Data.Width}, {tex.Data.Height})");
@@ -505,6 +523,9 @@ namespace JsonAssets.Framework
         }
         private void InjectCharactersFarmerShirts(IAssetData asset)
         {
+            if (Mod.instance.Shirts.Count == 0)
+                return;
+
             var oldTex = asset.AsImage().Data;
             asset.AsImage().ExtendImage(oldTex.Width, 4096);
             Log.Trace($"Shirts are now ({oldTex.Width}, {Math.Max(oldTex.Height, 4096)})");
@@ -546,6 +567,9 @@ namespace JsonAssets.Framework
 
         private void InjectCharactersFarmerPants(IAssetData asset)
         {
+            if (Mod.instance.Pants.Count == 0)
+                return;
+
             var tex = asset.AsImage();
             tex.ExtendImage(tex.Data.Width, 4096);
             Log.Trace($"Pants are now ({tex.Data.Width}, {tex.Data.Height})");
