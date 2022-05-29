@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace JsonAssets.Data
 {
+    [DebuggerDisplay("name = {Name}")]
     public class ContentPackData
     {
         /*********

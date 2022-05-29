@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using JsonAssets.Framework;
 
 namespace JsonAssets.Data
 {
+    [DebuggerDisplay("name = {Name}")]
     public class FruitTreeData : DataNeedsIdWithTexture
     {
         /*********

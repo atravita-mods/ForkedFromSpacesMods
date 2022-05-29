@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace JsonAssets.Data
 {
+    [DebuggerDisplay("name = {Name}")]
     public abstract class DataNeedsId
     {
         /*********

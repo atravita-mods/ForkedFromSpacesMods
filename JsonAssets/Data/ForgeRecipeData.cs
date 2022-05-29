@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace JsonAssets.Data
 {
+    [DebuggerDisplay("name = {ResultItemName}")]
     public class ForgeRecipeData
     {
         /*********
