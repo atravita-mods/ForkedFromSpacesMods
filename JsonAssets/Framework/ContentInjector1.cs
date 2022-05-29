@@ -370,7 +370,7 @@ namespace JsonAssets.Framework
 
         private void InjectTileSheetsCrops(IAssetData asset)
         {
-            if (Nod.instance.Crops.Count == 0)
+            if (Mod.instance.Crops.Count == 0)
                 return;
 
             var tex = asset.AsImage();

@@ -71,7 +71,6 @@ namespace JsonAssets
             helper.ConsoleCommands.Add("ja_unfix", "Unfix IDs once, in case IDs were double fixed.", this.DoCommands);
 
             helper.Events.Display.MenuChanged += this.OnMenuChanged;
-            helper.Events.GameLoop.Saving += this.OnSaving;
             helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.SaveCreated += this.OnCreated;
@@ -1186,7 +1185,7 @@ namespace JsonAssets
                 }
             }
 
-            // Load boots
+            // Load fences
             DirectoryInfo fencesDir = new(Path.Combine(contentPack.DirectoryPath, "Fences"));
             if (fencesDir.Exists)
             {
@@ -1205,7 +1204,7 @@ namespace JsonAssets
                 }
             }
 
-            // Load tailoring
+            // Load forge recipes.
             DirectoryInfo forgeDir = new(Path.Combine(contentPack.DirectoryPath, "Forge"));
             if (forgeDir.Exists)
             {
@@ -1228,14 +1227,15 @@ namespace JsonAssets
             this.DidInit = false;
             // When we go back to the title menu we need to reset things so things don't break when
             // going back to a save.
-            this.ClearIds(out this.ObjectIds, this.Objects.ToList<DataNeedsId>());
+            var objects = new List<DataNeedsId>(this.Objects);
+            objects.AddRange(this.Boots); // boots are also in objects.
+            this.ClearIds(out this.ObjectIds, objects);
             this.ClearIds(out this.CropIds, this.Crops.ToList<DataNeedsId>());
             this.ClearIds(out this.FruitTreeIds, this.FruitTrees.ToList<DataNeedsId>());
             this.ClearIds(out this.BigCraftableIds, this.BigCraftables.ToList<DataNeedsId>());
             this.ClearIds(out this.HatIds, this.Hats.ToList<DataNeedsId>());
             this.ClearIds(out this.WeaponIds, this.Weapons.ToList<DataNeedsId>());
-            List<DataNeedsId> clothing = new List<DataNeedsId>();
-            clothing.AddRange(this.Shirts);
+            List<DataNeedsId> clothing = new List<DataNeedsId>(this.Shirts);
             clothing.AddRange(this.Pants);
             this.ClearIds(out this.ClothingIds, clothing.ToList());
 
@@ -1542,6 +1542,13 @@ namespace JsonAssets
             this.VanillaHatIds = this.GetVanillaIds(Game1.content.Load<Dictionary<int, string>>("Data\\hats"), this.HatIds);
             this.VanillaWeaponIds = this.GetVanillaIds(Game1.content.Load<Dictionary<int, string>>("Data\\weapons"), this.WeaponIds);
             this.VanillaClothingIds = this.GetVanillaIds(Game1.content.Load<Dictionary<int, string>>("Data\\ClothingInformation"), this.ClothingIds);
+
+            if (Context.IsMainPlayer)
+            {
+                //to avoid accidentally hooking the event twice, remove first.
+                this.Helper.Events.GameLoop.Saving -= this.OnSaving;
+                this.Helper.Events.GameLoop.Saving += this.OnSaving;
+            }
         }
 
         /// <summary>Raised after the game finishes writing data to the save file (except the initial save creation).</summary>
@@ -1549,20 +1556,21 @@ namespace JsonAssets
         /// <param name="e">The event arguments.</param>
         private void OnSaving(object sender, SavingEventArgs e)
         {
-            if (!Game1.IsMasterGame)
-                return;
+            if (Context.IsMainPlayer)
+            {
+                if (!Directory.Exists(Path.Combine(Constants.CurrentSavePath, "JsonAssets")))
+                    Directory.CreateDirectory(Path.Combine(Constants.CurrentSavePath, "JsonAssets"));
 
-            if (!Directory.Exists(Path.Combine(Constants.CurrentSavePath, "JsonAssets")))
-                Directory.CreateDirectory(Path.Combine(Constants.CurrentSavePath, "JsonAssets"));
-
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-objects.json"), JsonConvert.SerializeObject(this.ObjectIds));
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-crops.json"), JsonConvert.SerializeObject(this.CropIds));
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-fruittrees.json"), JsonConvert.SerializeObject(this.FruitTreeIds));
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-big-craftables.json"), JsonConvert.SerializeObject(this.BigCraftableIds));
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-hats.json"), JsonConvert.SerializeObject(this.HatIds));
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-weapons.json"), JsonConvert.SerializeObject(this.WeaponIds));
-            File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-clothing.json"), JsonConvert.SerializeObject(this.ClothingIds));
-            //File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-boots.json"), JsonConvert.SerializeObject(this.BootIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-objects.json"), JsonConvert.SerializeObject(this.ObjectIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-crops.json"), JsonConvert.SerializeObject(this.CropIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-fruittrees.json"), JsonConvert.SerializeObject(this.FruitTreeIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-big-craftables.json"), JsonConvert.SerializeObject(this.BigCraftableIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-hats.json"), JsonConvert.SerializeObject(this.HatIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-weapons.json"), JsonConvert.SerializeObject(this.WeaponIds));
+                File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-clothing.json"), JsonConvert.SerializeObject(this.ClothingIds));
+                //File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-boots.json"), JsonConvert.SerializeObject(this.BootIds));
+            }
+            this.Helper.Events.GameLoop.Saving -= this.OnSaving;
         }
 
         internal IList<ObjectData> MyRings = new List<ObjectData>();
@@ -1688,12 +1696,20 @@ namespace JsonAssets
             if (data is long inputId)
                 return (int)inputId;
 
-            if (this.ObjectIds.TryGetValue((string)data, out int id))
+            if (data is not string datastring)
+            {
+                Log.Warn($"{data} isn't parsable as a string");
+                return 0;
+            }
+            if (this.ObjectIds.TryGetValue(datastring, out int id))
                 return id;
 
+            // favor spans for now, but maybe building a lookup dictionary in the opposite direction would be
+            // more performant.
+            var dataSpan = datastring.AsSpan();
             foreach (var obj in Game1.objectInformation)
             {
-                if (obj.Value.Split('/')[0] == (string)data)
+                if (dataSpan.AreSpansEqual(JAUtils.GetNameFrom(obj.Value)))
                     return obj.Key;
             }
 
@@ -1706,12 +1722,19 @@ namespace JsonAssets
             if (data is long inputId)
                 return (int)inputId;
 
-            if (this.ClothingIds.TryGetValue((string)data, out int id))
+            if (data is not string datastring)
+            {
+                Log.Warn($"{data} isn't parsable as a string");
+                return 0;
+            }
+
+            if (this.ClothingIds.TryGetValue(datastring, out int id))
                 return id;
 
+            var dataSpan = datastring.AsSpan();
             foreach (var obj in Game1.clothingInformation)
             {
-                if (obj.Value.Split('/')[0] == (string)data)
+                if (dataSpan.AreSpansEqual(JAUtils.GetNameFrom(obj.Value)))
                     return obj.Key;
             }
 
@@ -1778,7 +1801,7 @@ namespace JsonAssets
 
             Dictionary<string, int> ids = new Dictionary<string, int>();
 
-            int[] bigSkip = new[] { 309, 310, 311, 326, 340, 434, 447, 459, 599, 621, 628, 629, 630, 631, 632, 633, 645, 812 };
+            int[] bigSkip = type == "big-craftables" ? new[] { 309, 310, 311, 326, 340, 434, 447, 459, 599, 621, 628, 629, 630, 631, 632, 633, 645, 812 } : Array.Empty<int>();
 
             int currId = starting;
             foreach (var d in data)
@@ -1795,7 +1818,7 @@ namespace JsonAssets
                 {
                     Log.Verbose($"New ID: {d.Name} = {currId}");
                     int id = currId++;
-                    if (type == "big-craftables")
+                    if (bigSkip.Length != 0)
                     {
                         while (bigSkip.Contains(id))
                         {
@@ -1805,7 +1828,7 @@ namespace JsonAssets
 
                     ids.Add(d.Name, id);
                     if (type == "objects" && d is ObjectData { IsColored: true })
-                        ++currId;
+                        currId++;
                     else if (type == "big-craftables" && ((BigCraftableData)d).ReserveExtraIndexCount > 0)
                         currId += ((BigCraftableData)d).ReserveExtraIndexCount;
                     d.Id = ids[d.Name];
@@ -1824,14 +1847,11 @@ namespace JsonAssets
             int currIdx = starting;
             foreach (var d in data)
             {
-                if (d.TextureIndex == -1)
-                {
-                    Log.Verbose($"New texture index: {d.Name} = {currIdx}");
-                    idxs.Add(d.Name, currIdx++);
-                    if (type == "shirts" && ((ClothingData)d).HasFemaleVariant)
-                        ++currIdx;
-                    d.TextureIndex = idxs[d.Name];
-                }
+                Log.Verbose($"New texture index: {d.Name} = {currIdx}");
+                idxs.Add(d.Name, currIdx++);
+                if (type == "shirts" && ((ClothingData)d).HasFemaleVariant)
+                    ++currIdx;
+                d.TextureIndex = idxs[d.Name];
             }
         }
 
