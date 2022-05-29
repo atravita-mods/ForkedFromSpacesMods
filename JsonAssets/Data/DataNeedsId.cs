@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace JsonAssets.Data
 {
-    [DebuggerDisplay("name = {Name}")]
+    [DebuggerDisplay("name = {Name}, id = {Id}")]
     public abstract class DataNeedsId
     {
         /*********
