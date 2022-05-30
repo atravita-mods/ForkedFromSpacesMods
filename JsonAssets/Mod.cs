@@ -71,6 +71,7 @@ namespace JsonAssets
             helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.SaveCreated += this.OnCreated;
+            helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
             helper.Events.Specialized.LoadStageChanged += this.OnLoadStageChanged;
             helper.Events.Multiplayer.PeerContextReceived += this.ClientConnected;
 
@@ -96,6 +97,12 @@ namespace JsonAssets
                 new RingPatcher(),
                 new ShopMenuPatcher()
             );
+        }
+
+        private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e)
+        {
+            if (this.DidInit)
+                this.ResetAtTitle();
         }
 
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e)
@@ -1343,7 +1350,6 @@ namespace JsonAssets
             }
         }
 
-
         private void ClientConnected(object sender, PeerContextReceivedEventArgs e)
         {
             if (!Context.IsMainPlayer && !this.DidInit)
@@ -1364,13 +1370,6 @@ namespace JsonAssets
         {
             if (e.NewMenu == null)
                 return;
-
-            // handle return to title
-            if (e.NewMenu is TitleMenu)
-            {
-                this.ResetAtTitle();
-                return;
-            }
 
             // handle shop menu
             if (e.NewMenu is ShopMenu { source: not StorageFurniture } menu && !object.ReferenceEquals(e.NewMenu, this.LastShopMenu))
