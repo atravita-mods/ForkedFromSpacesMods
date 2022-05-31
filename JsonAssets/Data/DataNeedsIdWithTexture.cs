@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
+using StardewModdingAPI;
 
 namespace JsonAssets.Data
 {
@@ -16,7 +17,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Texture2D Texture
+        public IRawTextureData Texture
         {
 #pragma warning disable 618 // deliberate wrapper for obsolete code
             get => this.texture;
@@ -26,7 +27,7 @@ namespace JsonAssets.Data
 
         [JsonIgnore]
         [Obsolete("Use " + nameof(Texture) + " instead.")]
-        public Texture2D texture;
+        public IRawTextureData texture;
 
         // The following is mainly data for the Content Patcher integration.
 

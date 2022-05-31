@@ -392,7 +392,7 @@ namespace JsonAssets.Framework
                     }
 
                     var rect = ContentInjector1.ObjectRect(obj.GetObjectId());
-                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect);
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
                     obj.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     obj.TilesheetX = rect.X;
@@ -412,9 +412,9 @@ namespace JsonAssets.Framework
                     tex.PatchExtendedTileSheet(boots.Texture, null, ContentInjector1.ObjectRect(boots.GetObjectId()));
 
                     var rect = ContentInjector1.ObjectRect(boots.GetObjectId());
-                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect);
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    boots.Tilesheet = asset.AssetName + (ts == 0 ? "" : (ts + 1).ToString());
+                    boots.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     boots.TilesheetX = rect.X;
                     boots.TilesheetY = target.Y;
                 }
@@ -442,9 +442,9 @@ namespace JsonAssets.Framework
                     tex.PatchExtendedTileSheet(crop.Texture, null, ContentInjector1.CropRect(crop.GetCropSpriteIndex()));
 
                     var rect = ContentInjector1.CropRect(crop.GetCropSpriteIndex());
-                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect);
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    crop.Tilesheet = asset.AssetName + (ts == 0 ? "" : (ts + 1).ToString());
+                    crop.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     crop.TilesheetX = rect.X;
                     crop.TilesheetY = target.Y;
                 }
@@ -472,9 +472,9 @@ namespace JsonAssets.Framework
                     tex.PatchExtendedTileSheet(fruitTree.Texture, null, ContentInjector1.FruitTreeRect(fruitTree.GetFruitTreeIndex()));
 
                     var rect = ContentInjector1.FruitTreeRect(fruitTree.GetFruitTreeIndex());
-                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect);
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    fruitTree.Tilesheet = asset.AssetName + (ts == 0 ? "" : (ts + 1).ToString());
+                    fruitTree.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     fruitTree.TilesheetX = rect.X;
                     fruitTree.TilesheetY = target.Y;
                 }
@@ -510,8 +510,8 @@ namespace JsonAssets.Framework
                     }
 
                     var rect = ContentInjector1.BigCraftableRect(big.GetCraftableId());
-                    int ts = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect).TileSheet;
-                    big.Tilesheet = asset.AssetName + (ts == 0 ? "" : (ts + 1).ToString());
+                    int ts = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect).TileSheet;
+                    big.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     big.TilesheetX = rect.X;
                     big.TilesheetY = rect.Y;
                 }
@@ -536,12 +536,12 @@ namespace JsonAssets.Framework
                 try
                 {
                     Log.Verbose($"Injecting {hat.Name} sprites @ {ContentInjector1.HatRect(hat.GetHatId())}");
-                    asset.AsImage().PatchExtendedTileSheet(hat.Texture, null, ContentInjector1.HatRect(hat.GetHatId()));
+                    image.PatchExtendedTileSheet(hat.Texture, null, ContentInjector1.HatRect(hat.GetHatId()));
 
                     var rect = ContentInjector1.HatRect(hat.GetHatId());
-                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect);
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    hat.Tilesheet = asset.AssetName + (ts == 0 ? "" : (ts + 1).ToString());
+                    hat.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     hat.TilesheetX = rect.X;
                     hat.TilesheetY = target.Y;
                 }
@@ -570,7 +570,7 @@ namespace JsonAssets.Framework
 
                     var rect = ContentInjector1.WeaponRect(weapon.GetWeaponId());
                     int ts = 0;// TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect).TileSheet;
-                    weapon.Tilesheet = asset.AssetName + (ts == 0 ? "" : (ts + 1).ToString());
+                    weapon.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     weapon.TilesheetX = rect.X;
                     weapon.TilesheetY = rect.Y;
                 }

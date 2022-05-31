@@ -120,9 +120,51 @@ namespace SpaceCore
             return new AdjustedTarget(tileSheet, index * unit + extra);
         }
 
-        public static void PatchExtendedTileSheet(this IAssetDataForImage asset, Texture2D source, Rectangle? sourceArea = null, Rectangle? targetArea = null, PatchMode patchMode = PatchMode.Replace)
+        public static void PatchExtendedTileSheet(this IAssetDataForImage asset, Texture2D source, Rectangle? sourceArea = null, Rectangle? targetArea = null, PatchMode patchMode = PatchMode.Replace, bool includeLocale = false)
         {
-            string assetName = asset.AssetName.Replace('/', '\\');
+            string assetName = (includeLocale ? asset.Name : asset.NameWithoutLocale).BaseName;
+            if (!TileSheetExtensions.ExtendedTextureAssets.TryGetValue(assetName, out ExtensionData assetData) || !targetArea.HasValue)
+            {
+                asset.PatchImage(source, sourceArea, targetArea, patchMode);
+                return;
+            }
+
+            if (assetData.BaseTileSheet != asset.Data)
+            {
+                TileSheetExtensions.ExtendedTextures.Remove(assetData.BaseTileSheet);
+                TileSheetExtensions.ExtendedTextures.Add(asset.Data, assetData);
+                assetData.BaseTileSheet = asset.Data;
+            }
+
+            var adjustedTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.Data, targetArea.Value);
+            //Log.trace("Tilesheet target:" + adjustedTarget.TileSheet + " " + adjustedTarget.Y);
+            if (adjustedTarget.TileSheet == 0)
+            {
+                asset.PatchImage(source, sourceArea, targetArea, patchMode);
+                return;
+            }
+
+            // Cheaty hack so I don't have to reimplement patch
+            var oldData = asset.Data;
+            var dataProp = asset.GetType().GetProperty("Data");
+            try
+            {
+                dataProp.SetValue(asset, TileSheetExtensions.GetTileSheet(oldData, adjustedTarget.TileSheet));
+
+                Rectangle r = targetArea.Value;
+                r.Y = adjustedTarget.Y;
+                //Log.trace($"Ext-patching on {assetName}={extendedTextureAssets[assetName].AssetPath}: {r}/{asset.Data.Width}x{asset.Data.Height}");
+                asset.PatchImage(source, sourceArea, r, patchMode);
+            }
+            finally
+            {
+                dataProp.SetValue(asset, oldData);
+            }
+        }
+
+        public static void PatchExtendedTileSheet(this IAssetDataForImage asset,IRawTextureData source, Rectangle? sourceArea = null, Rectangle? targetArea = null, PatchMode patchMode = PatchMode.Replace, bool includeLocale = false)
+        {
+            string assetName = (includeLocale ? asset.Name : asset.NameWithoutLocale).BaseName;
             if (!TileSheetExtensions.ExtendedTextureAssets.TryGetValue(assetName, out ExtensionData assetData) || !targetArea.HasValue)
             {
                 asset.PatchImage(source, sourceArea, targetArea, patchMode);

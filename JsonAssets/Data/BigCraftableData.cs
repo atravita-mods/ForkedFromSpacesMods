@@ -7,6 +7,7 @@ using JsonAssets.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
+using StardewModdingAPI;
 
 namespace JsonAssets.Data
 {
@@ -19,7 +20,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Texture2D[] ExtraTextures { get; set; }
+        public IRawTextureData[] ExtraTextures { get; set; }
 
         public bool ReserveNextIndex { get; set; } = false; // Deprecated
         public int ReserveExtraIndexCount { get; set; } = 0;
@@ -48,7 +49,6 @@ namespace JsonAssets.Data
         /// <inheritdoc />
         public string TranslationKey { get; set; }
 
-
         /*********
         ** Public methods
         *********/
@@ -75,7 +75,7 @@ namespace JsonAssets.Data
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            this.ExtraTextures ??= Array.Empty<Texture2D>();
+            this.ExtraTextures ??= Array.Empty<IRawTextureData>();
             this.PurchaseRequirements ??= new List<string>();
             this.AdditionalPurchaseData ??= new List<PurchaseData>();
             this.NameLocalization ??= new();

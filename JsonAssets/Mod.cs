@@ -18,6 +18,7 @@ using SpaceShared;
 using SpaceShared.APIs;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
@@ -77,13 +78,13 @@ namespace JsonAssets
 
             helper.Events.Content.AssetRequested += this.OnAssetRequested;
 
-            TileSheetExtensions.RegisterExtendedTileSheet(@"Maps\springobjects", 16);
-            TileSheetExtensions.RegisterExtendedTileSheet(@"TileSheets\Craftables", 32);
-            TileSheetExtensions.RegisterExtendedTileSheet(@"TileSheets\crops", 32);
-            TileSheetExtensions.RegisterExtendedTileSheet(@"TileSheets\fruitTrees", 80);
-            TileSheetExtensions.RegisterExtendedTileSheet(@"Characters\Farmer\shirts", 32);
-            TileSheetExtensions.RegisterExtendedTileSheet(@"Characters\Farmer\pants", 688);
-            TileSheetExtensions.RegisterExtendedTileSheet(@"Characters\Farmer\hats", 80);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Maps\springobjects"), 16);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"TileSheets\Craftables"), 32);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"TileSheets\crops"), 32);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"TileSheets\fruitTrees"), 80);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Characters\Farmer\shirts"), 32);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Characters\Farmer\pants"), 688);
+            TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Characters\Farmer\hats"), 80);
 
             HarmonyPatcher.Apply(this,
                 new CropPatcher(),
@@ -357,7 +358,7 @@ namespace JsonAssets
         /// <param name="source">The manifest for the mod registering the crop.</param>
         /// <param name="crop">The crop data.</param>
         /// <param name="seedTex">The crop's seed texture.</param>
-        public void RegisterCrop(IManifest source, CropData crop, Texture2D seedTex)
+        public void RegisterCrop(IManifest source, CropData crop, IRawTextureData seedTex)
         {
             this.RegisterCrop(source, crop, seedTex, null);
         }
@@ -367,7 +368,7 @@ namespace JsonAssets
         /// <param name="crop">The crop data.</param>
         /// <param name="seedTexture">The crop's seed texture.</param>
         /// <param name="translations">The translations from which to get text if <see cref="CropData.SeedTranslationKey"/> is used.</param>
-        public void RegisterCrop(IManifest source, CropData crop, Texture2D seedTexture, ITranslationHelper translations)
+        public void RegisterCrop(IManifest source, CropData crop, IRawTextureData seedTexture, ITranslationHelper translations)
         {
             // load data
             crop.InvokeOnDeserialized();
@@ -472,7 +473,7 @@ namespace JsonAssets
         /// <param name="source">The manifest for the mod registering the fruit tree.</param>
         /// <param name="tree">The fruit tree data.</param>
         /// <param name="saplingTex">The fruit tree's sapling texture.</param>
-        public void RegisterFruitTree(IManifest source, FruitTreeData tree, Texture2D saplingTex)
+        public void RegisterFruitTree(IManifest source, FruitTreeData tree, IRawTextureData saplingTex)
         {
             this.RegisterFruitTree(source, tree, saplingTex, null);
         }
@@ -482,7 +483,7 @@ namespace JsonAssets
         /// <param name="tree">The fruit tree data.</param>
         /// <param name="saplingTexture">The fruit tree's sapling texture.</param>
         /// <param name="translations">The translations from which to get text if <see cref="FruitTreeData.SaplingTranslationKey"/> is used.</param>
-        public void RegisterFruitTree(IManifest source, FruitTreeData tree, Texture2D saplingTexture, ITranslationHelper translations)
+        public void RegisterFruitTree(IManifest source, FruitTreeData tree, IRawTextureData saplingTexture, ITranslationHelper translations)
         {
             // load data
             tree.InvokeOnDeserialized();
@@ -998,9 +999,9 @@ namespace JsonAssets
                         continue;
 
                     // save object
-                    obj.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/object.png");
+                    obj.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/object.png");
                     if (obj.IsColored)
-                        obj.TextureColor = contentPack.ModContent.Load<Texture2D>($"{relativePath}/color.png");
+                        obj.TextureColor = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/color.png");
 
                     this.RegisterObject(contentPack.Manifest, obj, translations);
                 }
@@ -1020,11 +1021,11 @@ namespace JsonAssets
                         continue;
 
                     // save crop
-                    crop.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/crop.png");
+                    crop.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/crop.png");
                     if (contentPack.HasFile($"{relativePath}/giant.png"))
-                        crop.GiantTexture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/giant.png");
+                        crop.GiantTexture = new(() => contentPack.ModContent.Load<Texture2D>($"{relativePath}/giant.png"));
 
-                    this.RegisterCrop(contentPack.Manifest, crop, contentPack.ModContent.Load<Texture2D>($"{relativePath}/seeds.png"), translations);
+                    this.RegisterCrop(contentPack.Manifest, crop, contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/seeds.png"), translations);
                 }
             }
 
@@ -1042,8 +1043,8 @@ namespace JsonAssets
                         continue;
 
                     // save fruit tree
-                    tree.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/tree.png");
-                    this.RegisterFruitTree(contentPack.Manifest, tree, contentPack.ModContent.Load<Texture2D>($"{relativePath}/sapling.png"), translations);
+                    tree.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/tree.png");
+                    this.RegisterFruitTree(contentPack.Manifest, tree, contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/sapling.png"), translations);
                 }
             }
 
@@ -1061,14 +1062,14 @@ namespace JsonAssets
                         continue;
 
                     // save craftable
-                    craftable.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/big-craftable.png");
+                    craftable.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/big-craftable.png");
                     if (craftable.ReserveNextIndex && craftable.ReserveExtraIndexCount == 0)
                         craftable.ReserveExtraIndexCount = 1;
                     if (craftable.ReserveExtraIndexCount > 0)
                     {
-                        craftable.ExtraTextures = new Texture2D[craftable.ReserveExtraIndexCount];
+                        craftable.ExtraTextures = new IRawTextureData[craftable.ReserveExtraIndexCount];
                         for (int i = 0; i < craftable.ReserveExtraIndexCount; ++i)
-                            craftable.ExtraTextures[i] = contentPack.ModContent.Load<Texture2D>($"{relativePath}/big-craftable-{i + 2}.png");
+                            craftable.ExtraTextures[i] = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/big-craftable-{i + 2}.png");
                     }
                     this.RegisterBigCraftable(contentPack.Manifest, craftable, translations);
                 }
@@ -1088,7 +1089,7 @@ namespace JsonAssets
                         continue;
 
                     // save object
-                    hat.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/hat.png");
+                    hat.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/hat.png");
                     this.RegisterHat(contentPack.Manifest, hat, translations);
                 }
             }
@@ -1107,7 +1108,7 @@ namespace JsonAssets
                         continue;
 
                     // save object
-                    weapon.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/weapon.png");
+                    weapon.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/weapon.png");
                     this.RegisterWeapon(contentPack.Manifest, weapon, translations);
                 }
             }
@@ -1126,14 +1127,14 @@ namespace JsonAssets
                         continue;
 
                     // save shirt
-                    shirt.TextureMale = contentPack.ModContent.Load<Texture2D>($"{relativePath}/male.png");
+                    shirt.TextureMale = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/male.png");
                     if (shirt.Dyeable)
-                        shirt.TextureMaleColor = contentPack.ModContent.Load<Texture2D>($"{relativePath}/male-color.png");
+                        shirt.TextureMaleColor = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/male-color.png");
                     if (shirt.HasFemaleVariant)
                     {
-                        shirt.TextureFemale = contentPack.ModContent.Load<Texture2D>($"{relativePath}/female.png");
+                        shirt.TextureFemale = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/female.png");
                         if (shirt.Dyeable)
-                            shirt.TextureFemaleColor = contentPack.ModContent.Load<Texture2D>($"{relativePath}/female-color.png");
+                            shirt.TextureFemaleColor = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/female-color.png");
                     }
                     this.RegisterShirt(contentPack.Manifest, shirt, translations);
                 }
@@ -1153,7 +1154,7 @@ namespace JsonAssets
                         continue;
 
                     // save pants
-                    pants.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/pants.png");
+                    pants.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/pants.png");
                     this.RegisterPants(contentPack.Manifest, pants, translations);
                 }
             }
@@ -1188,8 +1189,8 @@ namespace JsonAssets
                     if (boots == null || (boots.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(boots.DisableWithMod)) || (boots.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(boots.EnableWithMod)))
                         continue;
 
-                    boots.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/boots.png");
-                    boots.TextureColor = contentPack.ModContent.Load<Texture2D>($"{relativePath}/color.png");
+                    boots.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/boots.png");
+                    boots.TextureColor = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/color.png");
                     this.RegisterBoots(contentPack.Manifest, boots, translations);
                 }
             }
@@ -1207,8 +1208,8 @@ namespace JsonAssets
                     if (fence == null || (fence.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(fence.DisableWithMod)) || (fence.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(fence.EnableWithMod)))
                         continue;
 
-                    fence.Texture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/fence.png");
-                    fence.ObjectTexture = contentPack.ModContent.Load<Texture2D>($"{relativePath}/object.png");
+                    fence.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/fence.png");
+                    fence.ObjectTexture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/object.png");
                     this.RegisterFence(contentPack.Manifest, fence, translations);
                 }
             }

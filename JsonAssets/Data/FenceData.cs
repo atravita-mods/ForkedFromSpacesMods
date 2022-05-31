@@ -6,6 +6,7 @@ using JsonAssets.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
+using StardewModdingAPI;
 
 namespace JsonAssets.Data
 {
@@ -18,7 +19,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Texture2D ObjectTexture { get; set; }
+        public IRawTextureData ObjectTexture { get; set; }
 
         [JsonIgnore]
         internal ObjectData CorrespondingObject { get; set; }

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
+using StardewModdingAPI;
 
 namespace JsonAssets.Data
 {
@@ -15,9 +16,9 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Texture2D TextureMaleColor { get; set; }
+        public IRawTextureData TextureMaleColor { get; set; }
 
         [JsonIgnore]
-        public Texture2D TextureFemaleColor { get; set; }
+        public IRawTextureData TextureFemaleColor { get; set; }
     }
 }

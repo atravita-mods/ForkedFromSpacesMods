@@ -41,9 +41,9 @@ namespace SpaceShared
             // This is really bad. Pathos don't kill me.
             var modInfo = modRegistry.Get( packId );
             if ( modInfo.GetType().GetProperty( "Mod" ).GetValue( modInfo ) is IMod mod )
-                return mod.Helper.Content.GetActualAssetKey( path );
+                return mod.Helper.ModContent.GetInternalAssetName( path ).BaseName;
             else if ( modInfo.GetType().GetProperty( "ContentPack" ).GetValue( modInfo ) is IContentPack pack )
-                return pack.GetActualAssetKey( path );
+                return pack.ModContent.GetInternalAssetName( path ).BaseName;
 
             return null;
         }

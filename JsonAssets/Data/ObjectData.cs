@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
 using SObject = StardewValley.Object;
+using StardewModdingAPI;
 
 namespace JsonAssets.Data
 {
@@ -21,7 +22,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Texture2D TextureColor { get; set; }
+        public IRawTextureData TextureColor { get; set; }
 
         /// <inheritdoc />
         public string Description { get; set; }

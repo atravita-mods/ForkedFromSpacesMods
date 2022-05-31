@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -21,7 +22,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Texture2D GiantTexture { get; set; }
+        public Lazy<Texture2D> GiantTexture { get; set; }
 
         public object Product { get; set; }
         public string SeedName { get; set; }
