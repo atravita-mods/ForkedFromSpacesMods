@@ -68,7 +68,6 @@ namespace JsonAssets.Patches
         {
             instructions = instructions.ToArray();
 
-            // TODO: Learn how to use ILGenerator
             try
             {
                 // Pass 1 - indoor crop check

@@ -16,7 +16,6 @@ namespace JsonAssets.Framework
         /// <summary>The raw vanilla or Expanded Preconditions Utility condition string.</summary>
         private readonly string RawConditions;
 
-
         /*********
         ** Accessors
         *********/
@@ -28,7 +27,6 @@ namespace JsonAssets.Framework
 
         /// <inheritdoc />
         public bool NeedsExpandedPreconditionsUtility { get; }
-
 
         /*********
         ** Public methods

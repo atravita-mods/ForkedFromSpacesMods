@@ -1238,7 +1238,7 @@ namespace JsonAssets
             this.DidInit = false;
             // When we go back to the title menu we need to reset things so things don't break when
             // going back to a save.
-            var objects = new List<DataNeedsId>(this.Objects);
+            List<DataNeedsId> objects = new(this.Objects);
             objects.AddRange(this.Boots); // boots are also in objects.
             this.ClearIds(this.ObjectIds, objects);
             this.ClearIds(this.CropIds, this.Crops.ToList<DataNeedsId>());
@@ -1246,12 +1246,13 @@ namespace JsonAssets
             this.ClearIds(this.BigCraftableIds, this.BigCraftables.ToList<DataNeedsId>());
             this.ClearIds(this.HatIds, this.Hats.ToList<DataNeedsId>());
             this.ClearIds(this.WeaponIds, this.Weapons.ToList<DataNeedsId>());
-            List<DataNeedsId> clothing = new List<DataNeedsId>(this.Shirts);
+            List<DataNeedsId> clothing = new(this.Shirts);
             clothing.AddRange(this.Pants);
             this.ClearIds(this.ClothingIds, clothing.ToList());
 
             ContentInjector1.InvalidateUsed();
             ContentInjector1.Clear();
+            ContentInjector2.ResetGiftTastes();
 
             this.LocationsFixedAlready.Clear();
         }
@@ -1597,7 +1598,7 @@ namespace JsonAssets
                 if (item is SObject obj && ringIds.Contains(obj.ParentSheetIndex))
                 { // NOTE: Rings are not SObjects, so duplicate conversions do not occur.
                     Log.Trace($"Turning a ring-object of {obj.ParentSheetIndex} into a proper ring");
-                    Game1.player.Items[i] = new Ring(obj.ParentSheetIndex);
+                    Game1.player.Items[i] = new Ring(obj.ParentSheetIndex); // possibly worth considering things like "moving the moddata".
                 }
             }
         }
@@ -1691,9 +1692,6 @@ namespace JsonAssets
 
         /// <summary>The vanilla clothing IDs.</summary>
         internal ISet<int> VanillaClothingIds;
-
-        /// <summary>The vanilla boot IDs.</summary>
-        //internal ISet<int> VanillaBootIds;
 
         public int ResolveObjectId(object data)
         {
@@ -1848,7 +1846,7 @@ namespace JsonAssets
                 Log.Verbose($"New texture index: {d.Name} = {currIdx}");
                 idxs.Add(d.Name, currIdx++);
                 if (type == "shirts" && ((ClothingData)d).HasFemaleVariant)
-                    ++currIdx;
+                    currIdx++;
                 d.TextureIndex = idxs[d.Name];
             }
         }
@@ -1898,7 +1896,7 @@ namespace JsonAssets
 
             foreach (var entry in bundleDataCopy)
             {
-                List<string> toks = new List<string>(entry.Value.Split('/'));
+                List<string> toks = new(entry.Value.Split('/'));
 
                 // First, fix some stuff we broke in an earlier build by using .BundleData instead of the unlocalized version
                 // Copied from Game1.applySaveFix (case FixBotchedBundleData)
