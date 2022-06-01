@@ -97,7 +97,8 @@ namespace JsonAssets
                 new ItemPatcher(),
                 new ObjectPatcher(),
                 new RingPatcher(),
-                new ShopMenuPatcher()
+                new ShopMenuPatcher(),
+                new BootPatcher()
             );
         }
 
@@ -1708,7 +1709,7 @@ namespace JsonAssets
 
             // favor spans for now, but maybe building a lookup dictionary in the opposite direction would be
             // more performant.
-            var dataSpan = datastring.AsSpan();
+            var dataSpan = datastring.AsSpan().Trim();
             foreach (var obj in Game1.objectInformation)
             {
                 if (dataSpan.Equals(JAUtils.GetNameFrom(obj.Value), StringComparison.OrdinalIgnoreCase))
@@ -1733,7 +1734,7 @@ namespace JsonAssets
             if (this.ClothingIds.TryGetValue(datastring, out int id))
                 return id;
 
-            var dataSpan = datastring.AsSpan();
+            var dataSpan = datastring.AsSpan().Trim();
             foreach (var obj in Game1.clothingInformation)
             {
                 if (dataSpan.Equals(JAUtils.GetNameFrom(obj.Value), StringComparison.OrdinalIgnoreCase))
