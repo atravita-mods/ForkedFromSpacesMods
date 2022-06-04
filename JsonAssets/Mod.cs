@@ -993,6 +993,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in objectsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Objects/{dir.Name}";
 
                     // load data
@@ -1015,6 +1017,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in cropsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Crops/{dir.Name}";
 
                     // load data
@@ -1037,6 +1041,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in fruitTreesDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"FruitTrees/{dir.Name}";
 
                     // load data
@@ -1056,6 +1062,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in bigCraftablesDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"BigCraftables/{dir.Name}";
 
                     // load data
@@ -1083,6 +1091,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in hatsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Hats/{dir.Name}";
 
                     // load data
@@ -1102,6 +1112,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in weaponsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Weapons/{dir.Name}";
 
                     // load data
@@ -1121,6 +1133,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in shirtsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Shirts/{dir.Name}";
 
                     // load data
@@ -1148,6 +1162,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in pantsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Pants/{dir.Name}";
 
                     // load data
@@ -1167,6 +1183,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in tailoringDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Tailoring/{dir.Name}";
 
                     // load data
@@ -1184,6 +1202,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in bootsDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Boots/{dir.Name}";
 
                     // load data
@@ -1203,6 +1223,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in fencesDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Fences/{dir.Name}";
 
                     // load data
@@ -1222,6 +1244,8 @@ namespace JsonAssets
             {
                 foreach (DirectoryInfo dir in forgeDir.EnumerateDirectories())
                 {
+                    if (dir.Name.StartsWith('.'))
+                        continue;
                     string relativePath = $"Forge/{dir.Name}";
 
                     // load data
