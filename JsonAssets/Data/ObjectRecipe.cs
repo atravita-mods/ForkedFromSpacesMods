@@ -33,7 +33,12 @@ namespace JsonAssets.Data
             //string str = "";
             StringBuilder str = new();
             foreach (var ingredient in this.Ingredients)
-                str.Append(Mod.instance.ResolveObjectId(ingredient.Object) + " " + ingredient.Count + " ");
+            {
+                int id = Mod.instance.ResolveObjectId(ingredient.Object);
+                if (id == 0)
+                    continue;
+                str.Append(id + " " + ingredient.Count + " ");
+            }
             str.Remove(str.Length - 1, 1);
             str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/");
             if (parent.Category != ObjectCategory.Cooking)
