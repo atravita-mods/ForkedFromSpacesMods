@@ -472,6 +472,15 @@ namespace JsonAssets
                 }
             }
 
+            if (this.DupObjects.TryGetValue(crop.Seed.Name, out var oldmanifest))
+            {
+                Log.Error($"{crop.Seed.Name} previously added by {oldmanifest.UniqueID}, this may cause errors.");
+            }
+            else
+            {
+                this.DupObjects[crop.Seed.Name] = source;
+            }
+
             // save seed data
             this.Objects.Add(crop.Seed);
 
@@ -2269,7 +2278,7 @@ namespace JsonAssets
                             return true;
                         fence.ParentSheetIndex = -fence.whichType.Value;
                     }
-                    else if (obj.GetType() == typeof(SObject) || obj.GetType() == typeof(Cask))
+                    else if (obj.GetType() == typeof(SObject) || obj.GetType() == typeof(Cask) || obj.GetType() == typeof(ColoredObject))
                     {
                         if (!obj.bigCraftable.Value)
                         {
