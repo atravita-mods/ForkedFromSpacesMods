@@ -2457,6 +2457,17 @@ namespace JsonAssets
                     toRemove.Add(key);
             }
             foreach (var rem in toRemove)
+            {
+                loc.netObjects.Remove(rem);
+            }
+
+            toRemove.Clear();
+            foreach (var (key, obj) in loc.objects.Pairs)
+            {
+                if (this.FixItem(obj))
+                    toRemove.Add(key);
+            }
+            foreach (var rem in toRemove)
                 loc.objects.Remove(rem);
 
             toRemove.Clear();
