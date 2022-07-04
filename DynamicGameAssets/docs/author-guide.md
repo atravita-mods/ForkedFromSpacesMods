@@ -822,6 +822,8 @@ Town       | [Pierre](https://stardewvalleywiki.com/Pierre%27s_General_Store)   
 Town       | [Saloon](https://stardewvalleywiki.com/The_Stardrop_Saloon)                                | `Saloon`
 _festival_ | Festival shop                                                                              | `Festival.<date>` (e.g. `Festival.summer5`)
 
+Additionally, you can use `STF.<STFShopName>` to target an STF shop.
+
 ## Dynamic Fields
 Dynamic fields let you change a field of an item at the beginning of the day based on Content Patcher conditions, as well as values from config.json (if you have a config schema).
 
