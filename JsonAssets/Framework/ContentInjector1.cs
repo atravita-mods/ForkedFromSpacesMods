@@ -12,7 +12,7 @@ namespace JsonAssets.Framework
 {
     internal static class ContentInjector1
     {
-        private static readonly Dictionary<string, Action<IAssetData>> Files = new();
+        private static readonly Dictionary<string, Action<IAssetData>> Files = new(StringComparer.);
 
         private static readonly Dictionary<int, FenceData> FenceIndexes = new();
 
