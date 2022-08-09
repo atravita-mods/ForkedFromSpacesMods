@@ -1862,7 +1862,7 @@ namespace JsonAssets
 
         private Dictionary<string, int> AssignIds(string type, int starting, List<DataNeedsId> data)
         {
-            data.Sort((dni1, dni2) => dni1.Name.CompareTo(dni2.Name));
+            data.Sort((dni1, dni2) => string.Compare(dni1.Name, dni2.Name, StringComparison.Ordinal));
 
             Dictionary<string, int> ids = new();
 
@@ -1905,7 +1905,7 @@ namespace JsonAssets
 
         private void AssignTextureIndices(string type, int starting, List<DataSeparateTextureIndex> data)
         {
-            data.Sort((dni1, dni2) => dni1.Name.CompareTo(dni2.Name));
+            data.Sort((dni1, dni2) => string.Compare(dni1.Name, dni2.Name, StringComparison.Ordinal));
 
             Dictionary<string, int> idxs = new Dictionary<string, int>();
 
