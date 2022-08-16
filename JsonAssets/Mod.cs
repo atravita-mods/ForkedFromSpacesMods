@@ -1864,6 +1864,8 @@ namespace JsonAssets
         {
             data.Sort((dni1, dni2) => string.Compare(dni1.Name, dni2.Name, StringComparison.InvariantCulture));
 
+            Log.Trace($"Assiging {type} ids starting at {starting}: {data.Count} items");
+
             Dictionary<string, int> ids = new();
 
             int[] bigSkip = type == "big-craftables" ? new[] { 309, 310, 311, 326, 340, 434, 447, 459, 599, 621, 628, 629, 630, 631, 632, 633, 645, 812 } : Array.Empty<int>();

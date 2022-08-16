@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceShared;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 using StardewValley;
 
 namespace SpaceCore
@@ -13,6 +15,7 @@ namespace SpaceCore
 
         public const int MAXTILESHEETHEIGHT = 4096;
 
+        [DebuggerDisplay("{AssetPath}")]
         internal class ExtensionData
         {
             public ExtensionData(string assetPath, int unitSize)
@@ -32,7 +35,31 @@ namespace SpaceCore
 
         internal static void Init()
         {
-            SpaceCore.Instance.Helper.Content.AssetLoaders.Add(new ExtendedTileSheetLoader());
+            SpaceCore.Instance.Helper.Events.Content.AssetRequested += Load;
+        }
+
+        internal static void Load(object? _, AssetRequestedEventArgs e)
+        {
+            // all assets we want to load will end with a number.
+            if (char.IsDigit(e.NameWithoutLocale.BaseName[^1]))
+            {
+                foreach (var (assetName, extdata) in TileSheetExtensions.ExtendedTextureAssets)
+                {
+                    if (extdata.Extensions.Count > 0 && e.NameWithoutLocale.BaseName.StartsWith(assetName))
+                    {
+                        if (int.TryParse(e.NameWithoutLocale.BaseName.AsSpan(assetName.Length), out int pos)
+                            && pos >= 2 && pos < extdata.Extensions.Count + 2)
+                        {
+                            e.LoadFrom(() => extdata.Extensions[pos - 2], AssetLoadPriority.Exclusive);
+                        }
+                        else
+                        {
+                            Log.Error($"Failed to find extension for {e.NameWithoutLocale.BaseName}.");
+                        }
+                        break;
+                    }
+                }
+            }
         }
 
         public static void RegisterExtendedTileSheet(string asset, int unitSize)
@@ -257,6 +284,7 @@ namespace SpaceCore
         */
     }
 
+    /*
     public class ExtendedTileSheetLoader : IAssetLoader
     {
         public bool CanLoad<T>(IAssetInfo asset)
@@ -273,7 +301,7 @@ namespace SpaceCore
 
         public T Load<T>(IAssetInfo asset)
         {
-            foreach (var extAsset in TileSheetExtensions.ExtendedTextureAssets)
+            foreach (KeyValuePair<string, TileSheetExtensions.ExtensionData> extAsset in TileSheetExtensions.ExtendedTextureAssets)
             {
                 for (int i = 0; i < extAsset.Value.Extensions.Count; ++i)
                     if (asset.AssetNameEquals(extAsset.Key + (i + 2).ToString()))
@@ -282,5 +310,5 @@ namespace SpaceCore
 
             return default;
         }
-    }
+    } */
 }
