@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SpaceShared;
-using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 
@@ -118,17 +117,19 @@ namespace JsonAssets.Framework
                             }
                             else
                             {
+                                if (!data.TryGetValue(key, out string oldTastes))
+                                {
+                                    Log.Trace($"NPC {key} doesn't seem to have gift tastes, skipping.");
+                                    continue;
+                                }
+
                                 HashSet<string> loves = new(tastes[(int)GiftTasteIndex.Love]);
                                 HashSet<string> likes = new(tastes[(int)GiftTasteIndex.Like]);
                                 HashSet<string> neutrals = new(tastes[(int)GiftTasteIndex.Neutral]);
                                 HashSet<string> dislikes = new(tastes[(int)GiftTasteIndex.Dislike]);
                                 HashSet<string> hates = new(tastes[(int)GiftTasteIndex.Hate]);
 
-                                List<string> tastearray;
-                                if (data.TryGetValue(key, out string oldTastes))
-                                    tastearray = new(oldTastes.Split('/'));
-                                else
-                                    continue;
+                                List<string> tastearray = new(oldTastes.Split('/'));
 
                                 int loveindex = ((int)GiftTasteIndex.Love) * 2 + 1;
                                 int likeindex = ((int)GiftTasteIndex.Like) * 2 + 1;
@@ -149,7 +150,7 @@ namespace JsonAssets.Framework
 
                                 // string interpolation for some stupid reason sucks if you give it more than four
                                 // inputs in NET 5.0
-                                StringBuilder sb = new();
+                                StringBuilder sb = new(128);
                                 if (tastearray.Count > 0)
                                     sb.Append(tastearray[0]);
                                 sb.Append('/');

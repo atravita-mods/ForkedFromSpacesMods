@@ -1,11 +1,16 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using JsonAssets.Data;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using SpaceCore;
+using SpaceCore.AssetManagers.Models;
 using SpaceShared;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewValley;
 using StardewValley.GameData.Crafting;
 
 namespace JsonAssets.Framework
@@ -83,6 +88,8 @@ namespace JsonAssets.Framework
                     Files[helper.ParseAssetName(@"Data\Boots").BaseName] = InjectDataBoots;
                     Files[helper.ParseAssetName(@"Characters\Farmer\shoeColors").BaseName] = InjectCharactersFarmerShoeColors;
                 }
+
+                Log.Trace($"Content Injector 1 initialized with {Files.Count} assets.");
             }
 
             lock (FenceIndexes)
@@ -122,6 +129,7 @@ namespace JsonAssets.Framework
                 e.Edit(injector, (AssetEditPriority)int.MinValue); // insist on editing first.
         }
 
+        #region data
         private static void InjectDataObjectInformation(IAssetData asset)
         {
 #warning - crosscheck boots?
@@ -131,7 +139,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string objinfo = obj.GetObjectInformation().ToString();
-                    Log.Verbose($"Injecting to objects: {obj.GetObjectId()}: {objinfo}");
+                    Log.Verbose( () => $"Injecting to objects: {obj.GetObjectId()}: {objinfo}");
                     if (!data.TryAdd(obj.GetObjectId(), objinfo))
                         Log.Error($"Object {obj.GetObjectId()} is a duplicate???");
                 }
@@ -149,7 +157,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string tags = string.Join(", ", obj.ContextTags);
-                    Log.Verbose($"Injecting to object context tags: {obj.Name}: {tags}");
+                    Log.Verbose( () => $"Injecting to object context tags: {obj.Name}: {tags}");
                     if (!data.TryGetValue(obj.Name, out string prevTags) || prevTags == string.Empty)
                         data[obj.Name] = tags;
                     else
@@ -169,7 +177,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string cropinfo = crop.GetCropInformation().ToString();
-                    Log.Verbose($"Injecting to crops: {crop.GetSeedId()}: {cropinfo}");
+                    Log.Verbose(() => $"Injecting to crops: {crop.GetSeedId()}: {cropinfo}");
                     if (!data.TryAdd(crop.GetSeedId(), cropinfo))
                         Log.Error($"Crop {crop.GetSeedId()} already exists!");
                 }
@@ -187,7 +195,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string treeinfo = fruitTree.GetFruitTreeInformation();
-                    Log.Verbose($"Injecting to fruit trees: {fruitTree.GetSaplingId()}: {treeinfo}");
+                    Log.Verbose(() => $"Injecting to fruit trees: {fruitTree.GetSaplingId()}: {treeinfo}");
                     if (!data.TryAdd(fruitTree.GetSaplingId(), treeinfo))
                         Log.Error($"Fruit tree {fruitTree.Name} is a duplicate?");
                 }
@@ -207,7 +215,7 @@ namespace JsonAssets.Framework
                     if (obj.Recipe == null || obj.Category != ObjectCategory.Cooking)
                         continue;
                     string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
-                    Log.Verbose($"Injecting to cooking recipes: {obj.Name}: {recipestring}");
+                    Log.Verbose( () => $"Injecting to cooking recipes: {obj.Name}: {recipestring}");
                     if (!data.TryAdd(obj.Name, recipestring))
                         Log.Error($"Recipe for {obj.Name} already seems to exist?");
                 }
@@ -227,7 +235,7 @@ namespace JsonAssets.Framework
                     if (obj.Recipe == null || obj.Category == ObjectCategory.Cooking)
                         continue;
                     string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
-                    Log.Verbose($"Injecting to crafting recipes: {obj.Name}: {recipestring}");
+                    Log.Verbose(() => $"Injecting to crafting recipes: {obj.Name}: {recipestring}");
                     if (!data.TryAdd(obj.Name, recipestring))
                         Log.Error($"Recipe for {obj.Name} already seems to exist?");
                 }
@@ -243,7 +251,7 @@ namespace JsonAssets.Framework
                     if (big.Recipe == null)
                         continue;
                     string recipestring = big.Recipe.GetRecipeString(big).ToString();
-                    Log.Verbose($"Injecting to crafting recipes: {big.Name}: {recipestring}");
+                    Log.Verbose( () => $"Injecting to crafting recipes: {big.Name}: {recipestring}");
                     if (!data.TryAdd(big.Name, recipestring))
                         Log.Error($"Recipe for {big.Name} already seems to exist?");
                 }
@@ -261,7 +269,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string bigcraftableinfo = big.GetCraftableInformation();
-                    Log.Verbose($"Injecting to big craftables: {big.GetCraftableId()}: {bigcraftableinfo}");
+                    Log.Verbose(() => $"Injecting to big craftables: {big.GetCraftableId()}: {bigcraftableinfo}");
                     if (!data.TryAdd(big.GetCraftableId(), big.GetCraftableInformation()))
                         Log.Error($"{big.Name} already seems to exist!");
                 }
@@ -279,7 +287,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string hatinfo = hat.GetHatInformation();
-                    Log.Verbose($"Injecting to hats: {hat.GetHatId()}: {hatinfo}");
+                    Log.Verbose(() => $"Injecting to hats: {hat.GetHatId()}: {hatinfo}");
                     if (!data.TryAdd(hat.GetHatId(), hat.GetHatInformation()))
                         Log.Error($"Hat {hat.GetHatId()} appears to be a duplicate???");
                 }
@@ -297,7 +305,7 @@ namespace JsonAssets.Framework
                 try
                 {
                     string weaponData = weapon.GetWeaponInformation();
-                    Log.Verbose($"Injecting to weapons: {weapon.GetWeaponId()}: {weaponData}");
+                    Log.Verbose( ()=> $"Injecting to weapons: {weapon.GetWeaponId()}: {weaponData}");
                     if (!data.TryAdd(weapon.GetWeaponId(), weaponData))
                         Log.Error($"{weapon.GetWeaponId()} appears to be a duplicate?");
                 }
@@ -314,7 +322,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to clothing information: {shirt.GetClothingId()}: {shirt.GetClothingInformation()}");
+                    Log.Verbose( ()=> $"Injecting to clothing information: {shirt.GetClothingId()}: {shirt.GetClothingInformation()}");
                     if (!data.TryAdd(shirt.GetClothingId(), shirt.GetClothingInformation()))
                         Log.Error($"Shirt {shirt.GetClothingId()} appears to be a duplicate?");
                 }
@@ -327,7 +335,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to clothing information: {pants.GetClothingId()}: {pants.GetClothingInformation()}");
+                    Log.Verbose(() => $"Injecting to clothing information: {pants.GetClothingId()}: {pants.GetClothingInformation()}");
                     if (!data.TryAdd(pants.GetClothingId(), pants.GetClothingInformation()))
                         Log.Error($"Pants {pants.GetClothingId()} appears to be a duplicate?");
                 }
@@ -344,7 +352,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to tailoring recipe: {recipe.ToGameData()}");
+                    Log.Verbose(() => $"Injecting to tailoring recipe: {recipe.ToGameData()}");
                     data.Add(recipe.ToGameData());
                 }
                 catch (Exception e)
@@ -360,7 +368,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting to boots: {boots.GetObjectId()}: {boots.GetBootsInformation()}");
+                    Log.Verbose(() => $"Injecting to boots: {boots.GetObjectId()}: {boots.GetBootsInformation()}");
                     if (!data.TryAdd(boots.GetObjectId(), boots.GetBootsInformation()))
                         Log.Error($"Boots {boots.Name} appear to be a duplicate?");
                 }
@@ -370,33 +378,83 @@ namespace JsonAssets.Framework
                 }
             }
         }
+        #endregion
+
+        #region tilesheets
         private static void InjectMapsSpringobjects(IAssetData asset)
         {
             if (Mod.instance.Objects.Count == 0 && Mod.instance.Boots.Count == 0)
                 return;
 
             var tex= asset.AsImage();
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"SpringObjects are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
+
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
 
             foreach (var obj in Mod.instance.Objects)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {obj.Name} sprites @ {ContentInjector1.ObjectRect(obj.GetObjectId())}");
-                    tex.PatchExtendedTileSheet(obj.Texture, null, ContentInjector1.ObjectRect(obj.GetObjectId()));
-                    if (obj.IsColored)
-                    {
-                        Log.Verbose($"Injecting {obj.Name} color sprites @ {ContentInjector1.ObjectRect(obj.GetObjectId() + 1)}");
-                        tex.PatchExtendedTileSheet(obj.TextureColor, null, ContentInjector1.ObjectRect(obj.GetObjectId() + 1));
-                    }
-
                     var rect = ContentInjector1.ObjectRect(obj.GetObjectId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
                     obj.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     obj.TilesheetX = rect.X;
                     obj.TilesheetY = target.Y;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture?.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {obj.Name} sprites @ {rect}");
+                    rented.PatchImage(obj.Texture, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
+                    if (obj.IsColored)
+                    {
+                        var coloredRect = ContentInjector1.ObjectRect(obj.GetObjectId() + 1);
+                        var coloredTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, coloredRect);
+                        int coloredTS = coloredTarget.TileSheet;
+                        patchLoc = new Rectangle(coloredRect.X, coloredTarget.Y, coloredRect.Width, coloredRect.Height);
+                        if (coloredTS != ts)
+                        {
+                            // remainder of logic can refer to the new ts.
+                            ts = coloredTS;
+                            if (!scratch.TryGetValue(ts, out rented))
+                            {
+                                var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                                var array = ArrayPool<Color>.Shared.Rent(size);
+                                texture?.GetData(array, 0, size);
+                                rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                                scratch[ts] = rented;
+                            }
+                        }
+                        Log.Verbose(() => $"Injecting {obj.Name} color sprites @ {coloredRect}");
+                        rented.PatchImage(obj.TextureColor, null, patchLoc);
+
+                        // update maxY here too.
+                        if (!maxYs.TryGetValue(ts, out maxY))
+                            maxY = 0;
+                        maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -408,21 +466,52 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose($"Injecting {boots.Name} sprites @ {ContentInjector1.ObjectRect(boots.GetObjectId())}");
-                    tex.PatchExtendedTileSheet(boots.Texture, null, ContentInjector1.ObjectRect(boots.GetObjectId()));
-
                     var rect = ContentInjector1.ObjectRect(boots.GetObjectId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
                     boots.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     boots.TilesheetX = rect.X;
                     boots.TilesheetY = target.Y;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet( asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {boots.Name} sprites @ {rect}");
+                    rented.PatchImage(boots.Texture, null, patchLoc);
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting sprite for {boots.Name}: {e}");
                 }
             }
+
+            // extend spritesheet
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"SpringObjects are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for objects");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectTileSheetsCrops(IAssetData asset)
@@ -430,29 +519,68 @@ namespace JsonAssets.Framework
             if (Mod.instance.Crops.Count == 0)
                 return;
 
-            var tex = asset.AsImage();
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"Crops are now ({tex.Data.Width}, {tex.Data.Height})");
+            IAssetDataForImage tex = asset.AsImage();
 
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
+
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
+
+            // Patch in data for each crop.
             foreach (var crop in Mod.instance.Crops)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {crop.Name} crop images @ {ContentInjector1.CropRect(crop.GetCropSpriteIndex())}");
-                    tex.PatchExtendedTileSheet(crop.Texture, null, ContentInjector1.CropRect(crop.GetCropSpriteIndex()));
-
                     var rect = ContentInjector1.CropRect(crop.GetCropSpriteIndex());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
                     crop.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     crop.TilesheetX = rect.X;
                     crop.TilesheetY = target.Y;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture?.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose($"Injecting {crop.Name} crop images @ {rect}");
+                    rented.PatchImage(crop.Texture, null, patchLoc);
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting crop sprite for {crop.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Crops are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for crops");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectTileSheetsFruitTrees(IAssetData asset)
@@ -460,29 +588,69 @@ namespace JsonAssets.Framework
             if (Mod.instance.FruitTrees.Count == 0)
                 return;
 
+            // setup.
             var tex = asset.AsImage();
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"FruitTrees are now ({tex.Data.Width}, {tex.Data.Height})");
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
 
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
+
+            // Patch in data for each fruit tree.
             foreach (var fruitTree in Mod.instance.FruitTrees)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {fruitTree.Name} fruit tree images @ {ContentInjector1.FruitTreeRect(fruitTree.GetFruitTreeIndex())}");
-                    tex.PatchExtendedTileSheet(fruitTree.Texture, null, ContentInjector1.FruitTreeRect(fruitTree.GetFruitTreeIndex()));
-
                     var rect = ContentInjector1.FruitTreeRect(fruitTree.GetFruitTreeIndex());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
                     fruitTree.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     fruitTree.TilesheetX = rect.X;
                     fruitTree.TilesheetY = target.Y;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture.GetData(array, 0, size);
+                        rented = new(array, texture.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {fruitTree.Name} fruit tree images @ {rect}");
+                    rented.PatchImage(fruitTree.Texture, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting fruit tree sprite for {fruitTree.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"FruitTrees are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for fruit trees");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectTileSheetsCraftables(IAssetData asset)
@@ -490,66 +658,174 @@ namespace JsonAssets.Framework
             if (Mod.instance.BigCraftables.Count == 0)
                 return;
 
+            // setup.
             var tex = asset.AsImage();
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"Big craftables are now ({tex.Data.Width}, {tex.Data.Height})");
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
 
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
+
+            // patch in data for each bigcraftable.
             foreach (var big in Mod.instance.BigCraftables)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {big.Name} sprites @ {ContentInjector1.BigCraftableRect(big.GetCraftableId())}");
-                    tex.PatchExtendedTileSheet(big.Texture, null, ContentInjector1.BigCraftableRect(big.GetCraftableId()));
+                    var rect = ContentInjector1.BigCraftableRect(big.GetCraftableId());
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
+                    int ts = target.TileSheet;
+                    big.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    big.TilesheetX = rect.X;
+                    big.TilesheetY = target.Y;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture.GetData(array, 0, size);
+                        rented = new(array, texture.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {big.Name} sprites @ {rect}");
+                    rented.PatchImage(big.Texture, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                     if (big.ReserveExtraIndexCount > 0)
                     {
                         for (int i = 0; i < big.ReserveExtraIndexCount; ++i)
                         {
-                            Log.Verbose($"Injecting {big.Name} reserved extra sprite {i + 1} @ {ContentInjector1.BigCraftableRect(big.GetCraftableId() + i + 1)}");
-                            asset.AsImage().PatchExtendedTileSheet(big.ExtraTextures[i], null, ContentInjector1.BigCraftableRect(big.GetCraftableId() + i + 1));
+                            var extraRect = ContentInjector1.BigCraftableRect(big.GetCraftableId() + i + 1);
+                            var extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
+                            int extraTS = extraTarget.TileSheet;
+
+                            patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
+
+                            if (extraTS != ts)
+                            {
+                                // remainder of logic can refer to the new ts.
+                                ts = extraTS;
+                                if (!scratch.TryGetValue(ts, out rented))
+                                {
+                                    var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                                    var array = ArrayPool<Color>.Shared.Rent(size);
+                                    texture.GetData(array, 0, size);
+                                    rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                                    scratch[ts] = rented;
+                                }
+                            }
+
+                            Log.Verbose(() => $"Injecting {big.Name} reserved extra sprite {i + 1} @ {extraRect}");
+                            rented.PatchImage(big.ExtraTextures[i], null, patchLoc);
+
+                            // update maxY here too.
+                            if (!maxYs.TryGetValue(ts, out maxY))
+                                maxY = 0;
+                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                         }
                     }
 
-                    var rect = ContentInjector1.BigCraftableRect(big.GetCraftableId());
-                    int ts = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect).TileSheet;
-                    big.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
-                    big.TilesheetX = rect.X;
-                    big.TilesheetY = rect.Y;
+
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting sprite for {big.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Big craftables are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for bigCraftables");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectCharactersFarmerHats(IAssetData asset)
         {
             if (Mod.instance.Hats.Count == 0)
                 return;
-                
-            var image = asset.AsImage();
-            if (image.ExtendImage(image.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"Hats are now ({image.Data.Width}, {image.Data.Height})");
+
+            // setup
+            var tex = asset.AsImage();
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
+
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
 
             foreach (var hat in Mod.instance.Hats)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {hat.Name} sprites @ {ContentInjector1.HatRect(hat.GetHatId())}");
-                    image.PatchExtendedTileSheet(hat.Texture, null, ContentInjector1.HatRect(hat.GetHatId()));
-
                     var rect = ContentInjector1.HatRect(hat.GetHatId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
                     hat.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
                     hat.TilesheetX = rect.X;
                     hat.TilesheetY = target.Y;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture?.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {hat.Name} sprites @ {rect}");
+                    rented.PatchImage(hat.Texture, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting sprite for {hat.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Hats are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for hats.");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectTileSheetsWeapons(IAssetData asset)
@@ -557,38 +833,62 @@ namespace JsonAssets.Framework
             if (Mod.instance.Weapons.Count == 0)
                 return;
 
+            // setup
             var tex = asset.AsImage();
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"Weapons are now ({tex.Data.Width}, {tex.Data.Height})");
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            RawDataRented scratch = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            int maxY = tex.Data.Height;
 
             foreach (var weapon in Mod.instance.Weapons)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {weapon.Name} sprites @ {ContentInjector1.WeaponRect(weapon.GetWeaponId())}");
-                    tex.PatchImage(weapon.Texture, null, ContentInjector1.WeaponRect(weapon.GetWeaponId()));
-
                     var rect = ContentInjector1.WeaponRect(weapon.GetWeaponId());
-                    int ts = 0;// TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect).TileSheet;
-                    weapon.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+
+                    //int ts = 0;// TileSheetExtensions.GetAdjustedTileSheetTarget(asset.AssetName, rect).TileSheet;
+                    weapon.Tilesheet = asset.NameWithoutLocale.BaseName; // + (ts == 0 ? "" : (ts + 1).ToString());
                     weapon.TilesheetX = rect.X;
                     weapon.TilesheetY = rect.Y;
+
+                    Log.Verbose(() => $"Injecting {weapon.Name} sprites @ {rect}");
+                    scratch.PatchImage(weapon.Texture, null, rect);
+
+                    maxY = Math.Max(maxY, rect.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting sprite for {weapon.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Weapons are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            Log.DebugOnlyLog($"Patching into 0th extended tilesheet for weapons.");
+            Rectangle sourceRect = new(0, 0, scratch.Width, maxY);
+            tex.PatchExtendedTileSheet(scratch, sourceRect, sourceRect);
+
+            // dispose scratch (returns buffers)
+            scratch.Dispose();
         }
         private static void InjectCharactersFarmerShirts(IAssetData asset)
         {
             if (Mod.instance.Shirts.Count == 0)
                 return;
 
+            // setup
             var tex = asset.AsImage();
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"Shirts are now ({tex.Data.Width}, {tex.Data.Height})");
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
 
             foreach (var shirt in Mod.instance.Shirts)
             {
@@ -608,14 +908,115 @@ namespace JsonAssets.Framework
 
                         Log.Verbose($"Injecting {shirt.Name} sprites @ {string.Join(',', rects)}");
                     }
-                    tex.PatchExtendedTileSheet(shirt.TextureMale, null, ContentInjector1.ShirtRectPlain(shirt.GetMaleIndex()));
+
+                    var rect = ContentInjector1.ShirtRectPlain(shirt.GetMaleIndex());
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
+                    int ts = target.TileSheet;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture?.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    rented.PatchImage(shirt.TextureMale, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                     if (shirt.Dyeable)
-                        tex.PatchExtendedTileSheet(shirt.TextureMaleColor, null, ContentInjector1.ShirtRectDye(shirt.GetMaleIndex()));
+                    {
+                        var extraRect = ContentInjector1.ShirtRectDye(shirt.GetMaleIndex());
+                        var extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
+                        int extraTS = extraTarget.TileSheet;
+
+                        patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
+
+                        if (extraTS != ts)
+                        {
+                            // remainder of logic can refer to the new ts.
+                            ts = extraTS;
+                            if (!scratch.TryGetValue(ts, out rented))
+                            {
+                                var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                                var array = ArrayPool<Color>.Shared.Rent(size);
+                                texture?.GetData(array, 0, size);
+                                rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                                scratch[ts] = rented;
+                            }
+                        }
+
+                        rented.PatchImage(shirt.TextureMaleColor, null, patchLoc);
+
+                        // update maxY here too.
+                        if (!maxYs.TryGetValue(ts, out maxY))
+                            maxY = 0;
+                        maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+                    }
                     if (shirt.HasFemaleVariant)
                     {
-                        tex.PatchExtendedTileSheet(shirt.TextureFemale, null, ContentInjector1.ShirtRectPlain(shirt.GetFemaleIndex()));
+                        var extraRect = ContentInjector1.ShirtRectPlain(shirt.GetFemaleIndex());
+                        var extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
+                        int extraTS = extraTarget.TileSheet;
+
+                        patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
+
+                        if (extraTS != ts)
+                        {
+                            // remainder of logic can refer to the new ts.
+                            ts = extraTS;
+                            if (!scratch.TryGetValue(ts, out rented))
+                            {
+                                var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                                var array = ArrayPool<Color>.Shared.Rent(size);
+                                texture?.GetData(array, 0, size);
+                                rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                                scratch[ts] = rented;
+                            }
+                        }
+
+                        rented.PatchImage(shirt.TextureFemale, null, patchLoc);
+
+                        // update maxY here too.
+                        if (!maxYs.TryGetValue(ts, out maxY))
+                            maxY = 0;
+                        maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                         if (shirt.Dyeable)
-                            tex.PatchExtendedTileSheet(shirt.TextureFemaleColor, null, ContentInjector1.ShirtRectDye(shirt.GetFemaleIndex()));
+                        {
+                            extraRect = ContentInjector1.ShirtRectDye(shirt.GetFemaleIndex());
+                            extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
+                            extraTS = extraTarget.TileSheet;
+
+                            patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
+
+                            if (extraTS != ts)
+                            {
+                                // remainder of logic can refer to the new ts.
+                                ts = extraTS;
+                                if (!scratch.TryGetValue(ts, out rented))
+                                {
+                                    var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                                    var array = ArrayPool<Color>.Shared.Rent(size);
+                                    texture?.GetData(array, 0, size);
+                                    rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                                    scratch[ts] = rented;
+                                }
+                            }
+
+                            rented.PatchImage(shirt.TextureFemaleColor, null, patchLoc);
+
+                            // update maxY here too.
+                            if (!maxYs.TryGetValue(ts, out maxY))
+                                maxY = 0;
+                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -623,6 +1024,21 @@ namespace JsonAssets.Framework
                     Log.Error($"Exception injecting sprite for {shirt.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Shirts are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for shirts");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectCharactersFarmerPants(IAssetData asset)
@@ -630,22 +1046,64 @@ namespace JsonAssets.Framework
             if (Mod.instance.Pants.Count == 0)
                 return;
 
+            // setup
             var tex = asset.AsImage();
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
-                Log.Trace($"Pants are now ({tex.Data.Width}, {tex.Data.Height})");
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
+
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
 
             foreach (var pants in Mod.instance.Pants)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {pants.Name} sprites @ {ContentInjector1.PantsRect(pants.GetTextureIndex())}");
-                    tex.PatchExtendedTileSheet(pants.Texture, null, ContentInjector1.PantsRect(pants.GetTextureIndex()));
+                    var rect = ContentInjector1.PantsRect(pants.GetTextureIndex());
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
+                    int ts = target.TileSheet;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture?.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {pants.Name} sprites @ {ContentInjector1.PantsRect(pants.GetTextureIndex())}");
+                    rented.PatchImage(pants.Texture, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting sprite for {pants.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Pants are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for pants");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
 
         private static void InjectCharactersFarmerShoeColors(IAssetData asset)
@@ -654,22 +1112,67 @@ namespace JsonAssets.Framework
                 return;
 
             var tex = asset.AsImage();
-            tex.ExtendImage(tex.Data.Width, 4096);
-            Log.Trace($"Boots are now ({tex.Data.Width}, {tex.Data.Height})");
+            int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+            Color[] initial = ArrayPool<Color>.Shared.Rent(size);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            SortedList<int, RawDataRented> scratch = new();
+            SortedList<int, int> maxYs = new();
+
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+            maxYs[0] = tex.Data.Height;
 
             foreach (var boots in Mod.instance.Boots)
             {
                 try
                 {
-                    Log.Verbose($"Injecting {boots.Name} sprites @ {ContentInjector1.BootsRect(boots.GetTextureIndex())}");
-                    tex.PatchExtendedTileSheet(boots.TextureColor, null, ContentInjector1.BootsRect(boots.GetTextureIndex()));
+                    var rect = ContentInjector1.BootsRect(boots.GetTextureIndex());
+                    var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
+                    int ts = target.TileSheet;
+
+                    Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
+
+                    if (!scratch.TryGetValue(ts, out var rented))
+                    {
+                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
+                        var array = ArrayPool<Color>.Shared.Rent(size);
+                        texture?.GetData(array, 0, size);
+                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                        scratch[ts] = rented;
+                    }
+
+                    Log.Verbose(() => $"Injecting {boots.Name} sprites @ {rect}");
+                    rented.PatchImage(boots.TextureColor, null, patchLoc);
+
+                    if (!maxYs.TryGetValue(ts, out int maxY))
+                        maxY = 0;
+
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
                     Log.Error($"Exception injecting sprite for {boots.Name}: {e}");
                 }
             }
+
+            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+                Log.Trace($"Boots are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            foreach (var (index, data) in scratch)
+            {
+                Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for boots.");
+                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+            }
+
+            // dispose scratch (returns buffers)
+            foreach (RawDataRented rented in scratch.Values)
+                rented.Dispose();
         }
+        #endregion
+
+        #region rectangles
         internal static Rectangle ObjectRect(int index)
         {
             return new(index % 24 * 16, index / 24 * 16, 16, 16);
@@ -712,5 +1215,7 @@ namespace JsonAssets.Framework
         {
             return new(0, index, 4, 1);
         }
+
+        #endregion
     }
 }

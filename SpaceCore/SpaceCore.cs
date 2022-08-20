@@ -135,10 +135,10 @@ namespace SpaceCore
                 new SaveGamePatcher(serializerManager),
                 new SerializationPatcher(),
                 new SpriteBatchPatcher(),
-                new UtilityPatcher(),
+                new UtilityPatcher()//,
 
                 // I've started organizing by purpose instead of class patched
-                new PortableCarpenterPatcher()
+                //new PortableCarpenterPatcher()
             );
             /*
             var ps = typeof(NetDictionary<string, string, NetString, SerializableDictionary<string, string>, NetStringDictionary<string, NetString>>).GetProperties();
@@ -212,11 +212,13 @@ namespace SpaceCore
         private void OnUpdateTicked(object sender, UpdateTickedEventArgs e)
         {
             // update tilesheet references
+            /* Might not have to do this anymore?
             foreach (Texture2D oldTexture in TileSheetExtensions.UpdateReferences())
             {
                 if (this.Config.DisposeOldTextures)
                     this.TextureDisposalQueue.Enqueue(new(oldTexture, Game1.ticks));
             }
+            */ 
 
             // disable serializer if not used
             if (this.IsFirstTick && SpaceCore.ModTypes.Count == 0)

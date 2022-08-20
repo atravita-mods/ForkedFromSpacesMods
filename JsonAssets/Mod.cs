@@ -15,6 +15,7 @@ using Netcode;
 using Newtonsoft.Json;
 using Spacechase.Shared.Patching;
 using SpaceCore;
+using SpaceCore.AssetManagers.Models;
 using SpaceShared;
 using SpaceShared.APIs;
 using StardewModdingAPI;
@@ -245,7 +246,7 @@ namespace JsonAssets
             }
         }
 
-        private static readonly Regex NameToId = new("[^a-zA-Z0-9_.]", RegexOptions.Compiled|RegexOptions.ECMAScript);
+        private static readonly Regex NameToId = new("[^a-zA-Z0-9_.]", RegexOptions.Compiled | RegexOptions.ECMAScript);
 
         /// <summary>Load a folder as a Json Assets content pack.</summary>
         /// <param name="path">The absolute path to the content pack folder.</param>
@@ -374,6 +375,18 @@ namespace JsonAssets
             this.RegisterCrop(source, crop, seedTex, null);
         }
 
+        [Obsolete("Use the IRawTextureData form instead")]
+        public void RegisterCrop(IManifest source, CropData crop, Texture2D tex)
+        {
+            this.RegisterCrop(source, crop, new RawTextureImpl(tex), null);
+        }
+
+        [Obsolete("Use the IRawTextureData form instead")]
+        public void RegisterCrop(IManifest source, CropData crop, Texture2D tex, ITranslationHelper translations)
+        {
+            this.RegisterCrop(source, crop, new RawTextureImpl(tex), translations);
+        }
+
         /// <summary>Register a custom crop with Json Assets.</summary>
         /// <param name="source">The manifest for the mod registering the crop.</param>
         /// <param name="crop">The crop data.</param>
@@ -500,6 +513,18 @@ namespace JsonAssets
         public void RegisterFruitTree(IManifest source, FruitTreeData tree, IRawTextureData saplingTex)
         {
             this.RegisterFruitTree(source, tree, saplingTex, null);
+        }
+
+        [Obsolete("Use the IRawTextureData form instead")]
+        public void RegisterFruitTree(IManifest source, FruitTreeData tree, Texture2D tex)
+        {
+            this.RegisterFruitTree(source, tree, new RawTextureImpl(tex), null);
+        }
+
+        [Obsolete("Use the IRawTextureData form instead")]
+        public void RegisterFruitTree(IManifest source, FruitTreeData tree, Texture2D tex, ITranslationHelper translations)
+        {
+            this.RegisterFruitTree(source, tree, new RawTextureImpl(tex), translations);
         }
 
         /// <summary>Register a custom fruit tree with Json Assets.</summary>
@@ -1862,6 +1887,9 @@ namespace JsonAssets
 
         private Dictionary<string, int> AssignIds(string type, int starting, List<DataNeedsId> data)
         {
+            if (data.Count == 0)
+                return new();
+
             data.Sort((dni1, dni2) => string.Compare(dni1.Name, dni2.Name, StringComparison.InvariantCulture));
 
             Log.Trace($"Assiging {type} ids starting at {starting}: {data.Count} items");
