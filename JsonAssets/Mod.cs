@@ -1568,6 +1568,8 @@ namespace JsonAssets
                         ? JsonConvert.DeserializeObject<Dictionary<TKey, TValue>>(File.ReadAllText(path))
                         : new Dictionary<TKey, TValue>();
                 }
+
+
                 Directory.CreateDirectory(Path.Combine(Constants.CurrentSavePath, "JsonAssets"));
                 this.OldObjectIds = LoadDictionary<string, int>("ids-objects.json") ?? new Dictionary<string, int>();
                 this.OldCropIds = LoadDictionary<string, int>("ids-crops.json") ?? new Dictionary<string, int>();
@@ -1618,9 +1620,12 @@ namespace JsonAssets
             this.AssignTextureIndices("pants", Mod.StartingPantsTextureIndex, this.Pants.ToList<DataSeparateTextureIndex>());
             this.AssignTextureIndices("boots", Mod.StartingBootsId, this.Boots.ToList<DataSeparateTextureIndex>());
 
-            Log.Trace("Resetting max shirt/pants value");
-            this.Helper.Reflection.GetField<int>(typeof(Clothing), "_maxShirtValue").SetValue(-1);
-            this.Helper.Reflection.GetField<int>(typeof(Clothing), "_maxPantsValue").SetValue(-1);
+            if (this.Shirts.Count > 0 || this.Pants.Count > 0)
+            {
+                Log.Trace("Resetting max shirt/pants value");
+                this.Helper.Reflection.GetField<int>(typeof(Clothing), "_maxShirtValue").SetValue(-1);
+                this.Helper.Reflection.GetField<int>(typeof(Clothing), "_maxPantsValue").SetValue(-1);
+            }
 
             // Call before invoking Ids Assigned since clients may want to edit after.
             ContentInjector1.Initialize(this.Helper.GameContent);
@@ -1682,9 +1687,7 @@ namespace JsonAssets
             if (!e.IsLocalPlayer)
                 return;
 
-            IList<int> ringIds = new List<int>();
-            foreach (var ring in this.MyRings)
-                ringIds.Add(ring.Id);
+            HashSet<int> ringIds = new HashSet<int>(this.MyRings.Select(ring => ring.Id));
 
             for (int i = 0; i < Game1.player.Items.Count; ++i)
             {

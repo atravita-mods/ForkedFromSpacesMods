@@ -485,6 +485,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for objects");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -549,6 +550,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for crops");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -614,6 +616,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for fruit trees");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -706,6 +709,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for bigCraftables");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -770,6 +774,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for hats.");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -821,6 +826,7 @@ namespace JsonAssets.Framework
                 Log.Trace($"Weapons are now ({tex.Data.Width}, {tex.Data.Height})");
 
             Log.DebugOnlyLog($"Patching into 0th extended tilesheet for weapons.");
+            scratch.Shrink(scratch.Width, maxY);
             Rectangle sourceRect = new(0, 0, scratch.Width, maxY);
             tex.PatchExtendedTileSheet(scratch, sourceRect, sourceRect);
 
@@ -954,6 +960,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for shirts");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -1014,6 +1021,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for pants");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
@@ -1074,6 +1082,7 @@ namespace JsonAssets.Framework
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for boots.");
+                data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
                 Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);

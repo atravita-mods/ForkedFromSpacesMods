@@ -35,9 +35,9 @@ public class RawDataRented : IRawTextureData, IDisposable
         this.Dispose(disposing: false);
     }
 
-    public int Width { get; init; }
+    public int Width { get; private set; }
 
-    public int Height { get; init; }
+    public int Height { get; private set; }
 
     public int Size => this.Width * this.Height;
 
@@ -71,6 +71,15 @@ public class RawDataRented : IRawTextureData, IDisposable
 
     // the following methods are copied from SMAPI and adapted for RawDataRented.
     // Primarily optimized for use by JA.
+
+    public void Shrink(int x, int y)
+    {
+        if (x > this.Width || y > this.Height)
+            throw new InvalidOperationException();
+
+        this.Width = x;
+        this.Height = y;
+    }
 
     public void PatchImage(IRawTextureData source, Rectangle? sourceArea, Rectangle targetArea)
     {
