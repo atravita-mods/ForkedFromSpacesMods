@@ -1582,24 +1582,24 @@ namespace JsonAssets
 
                 if (this.Monitor.IsVerbose)
                 {
-                    Log.Verbose("OLD IDS START");
+                    Log.Trace("OLD IDS START");
                     foreach (var id in this.OldObjectIds)
-                        Log.Verbose("\tObject " + id.Key + " = " + id.Value);
+                        Log.Trace("\tObject " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldCropIds)
-                        Log.Verbose("\tCrop " + id.Key + " = " + id.Value);
+                        Log.Trace("\tCrop " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldFruitTreeIds)
-                        Log.Verbose("\tFruit Tree " + id.Key + " = " + id.Value);
+                        Log.Trace("\tFruit Tree " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldBigCraftableIds)
-                        Log.Verbose("\tBigCraftable " + id.Key + " = " + id.Value);
+                        Log.Trace("\tBigCraftable " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldHatIds)
-                        Log.Verbose("\tHat " + id.Key + " = " + id.Value);
+                        Log.Trace("\tHat " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldWeaponIds)
-                        Log.Verbose("\tWeapon " + id.Key + " = " + id.Value);
+                        Log.Trace("\tWeapon " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldClothingIds)
-                        Log.Verbose("\tClothing " + id.Key + " = " + id.Value);
+                        Log.Trace("\tClothing " + id.Key + " = " + id.Value);
                     //foreach (var id in this.OldBootsIds)
                     //    Log.Verbose("\tBoots " + id.Key + " = " + id.Value);
-                    Log.Verbose("OLD IDS END");
+                    Log.Trace("OLD IDS END");
                 }
             }
 

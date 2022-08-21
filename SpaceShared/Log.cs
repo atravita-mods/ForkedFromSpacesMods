@@ -8,6 +8,8 @@ namespace SpaceShared
     {
         public static IMonitor Monitor;
 
+        public static bool IsVerbose => Monitor.IsVerbose;
+
         [DebuggerHidden]
         [Conditional("DEBUG")]
         public static void DebugOnlyLog(string str)

@@ -139,7 +139,8 @@ namespace JsonAssets.Framework
                 try
                 {
                     string objinfo = obj.GetObjectInformation().ToString();
-                    Log.Verbose( () => $"Injecting to objects: {obj.GetObjectId()}: {objinfo}");
+                    if (Log.IsVerbose)
+                        Log.Trace( $"Injecting to objects: {obj.GetObjectId()}: {objinfo}");
                     if (!data.TryAdd(obj.GetObjectId(), objinfo))
                         Log.Error($"Object {obj.GetObjectId()} is a duplicate???");
                 }
@@ -157,8 +158,9 @@ namespace JsonAssets.Framework
                 try
                 {
                     string tags = string.Join(", ", obj.ContextTags);
-                    Log.Verbose( () => $"Injecting to object context tags: {obj.Name}: {tags}");
-                    if (!data.TryGetValue(obj.Name, out string prevTags) || prevTags == string.Empty)
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to object context tags: {obj.Name}: {tags}");
+                    if (!data.TryGetValue(obj.Name, out string prevTags) || string.IsNullOrWhiteSpace(prevTags))
                         data[obj.Name] = tags;
                     else
                         data[obj.Name] += (", " + tags);
@@ -177,7 +179,8 @@ namespace JsonAssets.Framework
                 try
                 {
                     string cropinfo = crop.GetCropInformation().ToString();
-                    Log.Verbose(() => $"Injecting to crops: {crop.GetSeedId()}: {cropinfo}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to crops: {crop.GetSeedId()}: {cropinfo}");
                     if (!data.TryAdd(crop.GetSeedId(), cropinfo))
                         Log.Error($"Crop {crop.GetSeedId()} already exists!");
                 }
@@ -195,7 +198,8 @@ namespace JsonAssets.Framework
                 try
                 {
                     string treeinfo = fruitTree.GetFruitTreeInformation();
-                    Log.Verbose(() => $"Injecting to fruit trees: {fruitTree.GetSaplingId()}: {treeinfo}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to fruit trees: {fruitTree.GetSaplingId()}: {treeinfo}");
                     if (!data.TryAdd(fruitTree.GetSaplingId(), treeinfo))
                         Log.Error($"Fruit tree {fruitTree.Name} is a duplicate?");
                 }
@@ -215,7 +219,8 @@ namespace JsonAssets.Framework
                     if (obj.Recipe == null || obj.Category != ObjectCategory.Cooking)
                         continue;
                     string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
-                    Log.Verbose( () => $"Injecting to cooking recipes: {obj.Name}: {recipestring}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to cooking recipes: {obj.Name}: {recipestring}");
                     if (!data.TryAdd(obj.Name, recipestring))
                         Log.Error($"Recipe for {obj.Name} already seems to exist?");
                 }
@@ -235,7 +240,8 @@ namespace JsonAssets.Framework
                     if (obj.Recipe == null || obj.Category == ObjectCategory.Cooking)
                         continue;
                     string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
-                    Log.Verbose(() => $"Injecting to crafting recipes: {obj.Name}: {recipestring}");
+                    if (Log.IsVerbose)
+                        Log.Trace( $"Injecting to crafting recipes: {obj.Name}: {recipestring}");
                     if (!data.TryAdd(obj.Name, recipestring))
                         Log.Error($"Recipe for {obj.Name} already seems to exist?");
                 }
@@ -251,7 +257,8 @@ namespace JsonAssets.Framework
                     if (big.Recipe == null)
                         continue;
                     string recipestring = big.Recipe.GetRecipeString(big).ToString();
-                    Log.Verbose( () => $"Injecting to crafting recipes: {big.Name}: {recipestring}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to crafting recipes: {big.Name}: {recipestring}");
                     if (!data.TryAdd(big.Name, recipestring))
                         Log.Error($"Recipe for {big.Name} already seems to exist?");
                 }
@@ -269,7 +276,8 @@ namespace JsonAssets.Framework
                 try
                 {
                     string bigcraftableinfo = big.GetCraftableInformation();
-                    Log.Verbose(() => $"Injecting to big craftables: {big.GetCraftableId()}: {bigcraftableinfo}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to big craftables: {big.GetCraftableId()}: {bigcraftableinfo}");
                     if (!data.TryAdd(big.GetCraftableId(), big.GetCraftableInformation()))
                         Log.Error($"{big.Name} already seems to exist!");
                 }
@@ -287,7 +295,8 @@ namespace JsonAssets.Framework
                 try
                 {
                     string hatinfo = hat.GetHatInformation();
-                    Log.Verbose(() => $"Injecting to hats: {hat.GetHatId()}: {hatinfo}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to hats: {hat.GetHatId()}: {hatinfo}");
                     if (!data.TryAdd(hat.GetHatId(), hat.GetHatInformation()))
                         Log.Error($"Hat {hat.GetHatId()} appears to be a duplicate???");
                 }
@@ -305,7 +314,8 @@ namespace JsonAssets.Framework
                 try
                 {
                     string weaponData = weapon.GetWeaponInformation();
-                    Log.Verbose( ()=> $"Injecting to weapons: {weapon.GetWeaponId()}: {weaponData}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to weapons: {weapon.GetWeaponId()}: {weaponData}");
                     if (!data.TryAdd(weapon.GetWeaponId(), weaponData))
                         Log.Error($"{weapon.GetWeaponId()} appears to be a duplicate?");
                 }
@@ -322,7 +332,8 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose( ()=> $"Injecting to clothing information: {shirt.GetClothingId()}: {shirt.GetClothingInformation()}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to clothing information: {shirt.GetClothingId()}: {shirt.GetClothingInformation()}");
                     if (!data.TryAdd(shirt.GetClothingId(), shirt.GetClothingInformation()))
                         Log.Error($"Shirt {shirt.GetClothingId()} appears to be a duplicate?");
                 }
@@ -335,7 +346,8 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose(() => $"Injecting to clothing information: {pants.GetClothingId()}: {pants.GetClothingInformation()}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to clothing information: {pants.GetClothingId()}: {pants.GetClothingInformation()}");
                     if (!data.TryAdd(pants.GetClothingId(), pants.GetClothingInformation()))
                         Log.Error($"Pants {pants.GetClothingId()} appears to be a duplicate?");
                 }
@@ -352,7 +364,8 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose(() => $"Injecting to tailoring recipe: {recipe.ToGameData()}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to tailoring recipe: {recipe.ToGameData()}");
                     data.Add(recipe.ToGameData());
                 }
                 catch (Exception e)
@@ -368,7 +381,8 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    Log.Verbose(() => $"Injecting to boots: {boots.GetObjectId()}: {boots.GetBootsInformation()}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting to boots: {boots.GetObjectId()}: {boots.GetBootsInformation()}");
                     if (!data.TryAdd(boots.GetObjectId(), boots.GetBootsInformation()))
                         Log.Error($"Boots {boots.Name} appear to be a duplicate?");
                 }
@@ -407,7 +421,7 @@ namespace JsonAssets.Framework
                     var rect = ContentInjector1.ObjectRect(obj.GetObjectId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    obj.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    obj.Tilesheet = asset.NameWithoutLocale.BaseName.GetTilesheetName(ts);
                     obj.TilesheetX = rect.X;
                     obj.TilesheetY = target.Y;
 
@@ -415,7 +429,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {obj.Name} sprites @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {obj.Name} sprites @ {rect}");
                     rented.PatchImage(obj.Texture, null, patchLoc);
 
                     int maxY;
@@ -456,7 +471,7 @@ namespace JsonAssets.Framework
                     var rect = ContentInjector1.ObjectRect(boots.GetObjectId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    boots.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    boots.Tilesheet = asset.NameWithoutLocale.BaseName.GetTilesheetName(ts);
                     boots.TilesheetX = rect.X;
                     boots.TilesheetY = target.Y;
 
@@ -464,7 +479,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {boots.Name} sprites @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {boots.Name} sprites @ {rect}");
                     rented.PatchImage(boots.Texture, null, patchLoc);
 
                     if (!maxYs.TryGetValue(ts, out int maxY))
@@ -482,13 +498,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"SpringObjects are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for objects");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -523,7 +542,7 @@ namespace JsonAssets.Framework
                     var rect = ContentInjector1.CropRect(crop.GetCropSpriteIndex());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    crop.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    crop.Tilesheet = asset.NameWithoutLocale.BaseName.GetTilesheetName(ts);
                     crop.TilesheetX = rect.X;
                     crop.TilesheetY = target.Y;
 
@@ -531,7 +550,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose($"Injecting {crop.Name} crop images @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {crop.Name} crop images @ {rect}");
                     rented.PatchImage(crop.Texture, null, patchLoc);
                     if (!maxYs.TryGetValue(ts, out int maxY))
                         maxY = 0;
@@ -547,13 +567,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Crops are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for crops");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -588,7 +611,7 @@ namespace JsonAssets.Framework
                     var rect = ContentInjector1.FruitTreeRect(fruitTree.GetFruitTreeIndex());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    fruitTree.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    fruitTree.Tilesheet = asset.NameWithoutLocale.BaseName.GetTilesheetName(ts);
                     fruitTree.TilesheetX = rect.X;
                     fruitTree.TilesheetY = target.Y;
 
@@ -596,7 +619,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {fruitTree.Name} fruit tree images @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {fruitTree.Name} fruit tree images @ {rect}");
                     rented.PatchImage(fruitTree.Texture, null, patchLoc);
 
                     if (!maxYs.TryGetValue(ts, out int maxY))
@@ -613,13 +637,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"FruitTrees are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for fruit trees");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -654,7 +681,7 @@ namespace JsonAssets.Framework
                     var rect = ContentInjector1.BigCraftableRect(big.GetCraftableId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    big.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    big.Tilesheet = asset.NameWithoutLocale.BaseName.GetTilesheetName(ts);
                     big.TilesheetX = rect.X;
                     big.TilesheetY = target.Y;
 
@@ -662,7 +689,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {big.Name} sprites @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {big.Name} sprites @ {rect}");
                     rented.PatchImage(big.Texture, null, patchLoc);
 
                     int maxY;
@@ -688,7 +716,8 @@ namespace JsonAssets.Framework
 
                             patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
 
-                            Log.Verbose(() => $"Injecting {big.Name} reserved extra sprite {i + 1} @ {extraRect}");
+                            if (Log.IsVerbose)
+                                Log.Trace($"Injecting {big.Name} reserved extra sprite {i + 1} @ {extraRect}");
                             rented.PatchImage(big.ExtraTextures[i], null, patchLoc);
                         }
                     }
@@ -706,13 +735,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Big craftables are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for bigCraftables");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -746,7 +778,7 @@ namespace JsonAssets.Framework
                     var rect = ContentInjector1.HatRect(hat.GetHatId());
                     var target = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, rect);
                     int ts = target.TileSheet;
-                    hat.Tilesheet = asset.NameWithoutLocale.BaseName + (ts == 0 ? "" : (ts + 1).ToString());
+                    hat.Tilesheet = asset.NameWithoutLocale.BaseName.GetTilesheetName(ts);
                     hat.TilesheetX = rect.X;
                     hat.TilesheetY = target.Y;
 
@@ -754,7 +786,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {hat.Name} sprites @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Verbose($"Injecting {hat.Name} sprites @ {rect}");
                     rented.PatchImage(hat.Texture, null, patchLoc);
 
                     if (!maxYs.TryGetValue(ts, out int maxY))
@@ -771,13 +804,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Hats are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for hats.");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -812,7 +848,8 @@ namespace JsonAssets.Framework
                     weapon.TilesheetX = rect.X;
                     weapon.TilesheetY = rect.Y;
 
-                    Log.Verbose(() => $"Injecting {weapon.Name} sprites @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {weapon.Name} sprites @ {rect}");
                     scratch.PatchImage(weapon.Texture, null, rect);
 
                     maxY = Math.Max(maxY, rect.Bottom);
@@ -857,7 +894,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    if (Mod.instance.Monitor.IsVerbose)
+                    if (Log.IsVerbose)
                     {
                         List<Rectangle> rects = new(4) { ShirtRectPlain(shirt.GetMaleIndex()) };
                         if (shirt.Dyeable)
@@ -869,7 +906,7 @@ namespace JsonAssets.Framework
                                 rects.Add(ShirtRectDye(shirt.GetFemaleIndex()));
                         }
 
-                        Log.Verbose($"Injecting {shirt.Name} sprites @ {string.Join(',', rects)}");
+                        Log.Trace($"Injecting {shirt.Name} sprites @ {string.Join(',', rects)}");
                     }
 
                     var rect = ContentInjector1.ShirtRectPlain(shirt.GetMaleIndex());
@@ -958,13 +995,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Shirts are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for shirts");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -1003,7 +1043,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {pants.Name} sprites @ {ContentInjector1.PantsRect(pants.GetTextureIndex())}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {pants.Name} sprites @ {ContentInjector1.PantsRect(pants.GetTextureIndex())}");
                     rented.PatchImage(pants.Texture, null, patchLoc);
 
                     if (!maxYs.TryGetValue(ts, out int maxY))
@@ -1019,13 +1060,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Pants are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for pants");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -1063,7 +1107,8 @@ namespace JsonAssets.Framework
 
                     RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
-                    Log.Verbose(() => $"Injecting {boots.Name} sprites @ {rect}");
+                    if (Log.IsVerbose)
+                        Log.Trace($"Injecting {boots.Name} sprites @ {rect}");
                     rented.PatchImage(boots.TextureColor, null, patchLoc);
 
                     if (!maxYs.TryGetValue(ts, out int maxY))
@@ -1080,13 +1125,16 @@ namespace JsonAssets.Framework
             if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Boots are now ({tex.Data.Width}, {tex.Data.Height})");
 
+            int currentY = 0;
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for boots.");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
+
+                currentY += maxYs[index];
             }
 
             // dispose scratch (returns buffers)
@@ -1128,7 +1176,10 @@ namespace JsonAssets.Framework
             return true;
         }
 
-    #region rectangles
+        private static string GetTilesheetName(this string assetName, int ts)
+            => ts == 0 ? assetName : $"{assetName}{ts + 1}";
+
+        #region rectangles
         internal static Rectangle ObjectRect(int index)
         {
             int div = Math.DivRem(index, 24, out int rem);
