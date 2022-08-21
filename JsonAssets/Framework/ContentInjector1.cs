@@ -797,6 +797,7 @@ namespace JsonAssets.Framework
 
             Rectangle startPos = ContentInjector1.WeaponRect(Mod.StartingWeaponId);
             Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
+            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             RawDataRented scratch = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             int maxY = tex.Data.Height;
 
@@ -1084,7 +1085,7 @@ namespace JsonAssets.Framework
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for boots.");
                 data.Shrink(data.Width, maxYs[index]);
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
             }
 
@@ -1130,11 +1131,13 @@ namespace JsonAssets.Framework
     #region rectangles
         internal static Rectangle ObjectRect(int index)
         {
-            return new(index % 24 * 16, index / 24 * 16, 16, 16);
+            int div = Math.DivRem(index, 24, out int rem);
+            return new(rem * 16, div * 16, 16, 16);
         }
         internal static Rectangle CropRect(int index)
         {
-            return new(index % 2 * 128, index / 2 * 32, 128, 32);
+            int div = Math.DivRem(index, 2, out int rem);
+            return new(rem * 128, div * 32, 128, 32);
         }
         internal static Rectangle FruitTreeRect(int index)
         {
@@ -1142,19 +1145,23 @@ namespace JsonAssets.Framework
         }
         internal static Rectangle BigCraftableRect(int index)
         {
-            return new(index % 8 * 16, index / 8 * 32, 16, 32);
+            int div = Math.DivRem(index, 8, out int rem);
+            return new(rem * 16, div * 32, 16, 32);
         }
         internal static Rectangle HatRect(int index)
         {
-            return new(index % 12 * 20, index / 12 * 80, 20, 80);
+            int div = Math.DivRem(index, 12, out int rem);
+            return new(rem * 20, div * 80, 20, 80);
         }
         internal static Rectangle WeaponRect(int index)
         {
-            return new(index % 8 * 16, index / 8 * 16, 16, 16);
+            int div = Math.DivRem(index, 8, out int rem);
+            return new(rem * 16, div * 16, 16, 16);
         }
         internal static Rectangle ShirtRectPlain(int index)
         {
-            return new(index % 16 * 8, index / 16 * 32, 8, 32);
+            int div = Math.DivRem(index, 8, out int rem);
+            return new(rem * 8, div * 32, 8, 32);
         }
         internal static Rectangle ShirtRectDye(int index)
         {
@@ -1164,7 +1171,8 @@ namespace JsonAssets.Framework
         }
         internal static Rectangle PantsRect(int index)
         {
-            return new(index % 10 * 192, index / 10 * 688, 192, 688);
+            int div = Math.DivRem(index, 10, out int rem);
+            return new(rem * 192, div * 688, 192, 688);
         }
         internal static Rectangle BootsRect(int index)
         {

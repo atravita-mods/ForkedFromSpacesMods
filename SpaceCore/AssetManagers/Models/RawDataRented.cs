@@ -72,13 +72,13 @@ public class RawDataRented : IRawTextureData, IDisposable
     // the following methods are copied from SMAPI and adapted for RawDataRented.
     // Primarily optimized for use by JA.
 
-    public void Shrink(int x, int y)
+    public void Shrink(int newWidth, int newHeight)
     {
-        if (x > this.Width || y > this.Height)
+        if (newWidth > this.Width || newHeight > this.Height)
             throw new InvalidOperationException();
 
-        this.Width = x;
-        this.Height = y;
+        this.Width = newWidth;
+        this.Height = newHeight;
     }
 
     public void PatchImage(IRawTextureData source, Rectangle? sourceArea, Rectangle targetArea)
