@@ -390,7 +390,9 @@ namespace JsonAssets.Framework
 
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startpoint = ContentInjector1.ObjectRect(Mod.StartingObjectId);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startpoint.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -411,50 +413,35 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture?.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {obj.Name} sprites @ {rect}");
                     rented.PatchImage(obj.Texture, null, patchLoc);
 
-                    if (!maxYs.TryGetValue(ts, out int maxY))
-                        maxY = 0;
-
-                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+                    int maxY;
 
                     if (obj.IsColored)
                     {
                         var coloredRect = ContentInjector1.ObjectRect(obj.GetObjectId() + 1);
                         var coloredTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, coloredRect);
                         int coloredTS = coloredTarget.TileSheet;
-                        patchLoc = new Rectangle(coloredRect.X, coloredTarget.Y, coloredRect.Width, coloredRect.Height);
                         if (coloredTS != ts)
                         {
-                            // remainder of logic can refer to the new ts.
+                            if (!maxYs.TryGetValue(ts, out maxY))
+                                maxY = 0;
+                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                             ts = coloredTS;
-                            if (!scratch.TryGetValue(ts, out rented))
-                            {
-                                var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                                var array = ArrayPool<Color>.Shared.Rent(size);
-                                texture?.GetData(array, 0, size);
-                                rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                                scratch[ts] = rented;
-                            }
+                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
                         }
+
+                        patchLoc = new Rectangle(coloredRect.X, coloredTarget.Y, coloredRect.Width, coloredRect.Height);
                         Log.Verbose(() => $"Injecting {obj.Name} color sprites @ {coloredRect}");
                         rented.PatchImage(obj.TextureColor, null, patchLoc);
-
-                        // update maxY here too.
-                        if (!maxYs.TryGetValue(ts, out maxY))
-                            maxY = 0;
-                        maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                     }
+
+                    if (!maxYs.TryGetValue(ts, out maxY))
+                        maxY = 0;
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
@@ -475,17 +462,11 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet( asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {boots.Name} sprites @ {rect}");
                     rented.PatchImage(boots.Texture, null, patchLoc);
+
                     if (!maxYs.TryGetValue(ts, out int maxY))
                         maxY = 0;
 
@@ -498,7 +479,7 @@ namespace JsonAssets.Framework
             }
 
             // extend spritesheet
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"SpringObjects are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -523,7 +504,9 @@ namespace JsonAssets.Framework
 
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startpoint = ContentInjector1.CropRect(Mod.StartingCropId);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startpoint.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -545,14 +528,7 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture?.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose($"Injecting {crop.Name} crop images @ {rect}");
                     rented.PatchImage(crop.Texture, null, patchLoc);
@@ -567,7 +543,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Crops are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -591,8 +567,10 @@ namespace JsonAssets.Framework
             // setup.
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
+
+            Rectangle startpoint = ContentInjector1.FruitTreeRect(Mod.StartingFruitTreeId);
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startpoint.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -614,14 +592,7 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture.GetData(array, 0, size);
-                        rented = new(array, texture.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {fruitTree.Name} fruit tree images @ {rect}");
                     rented.PatchImage(fruitTree.Texture, null, patchLoc);
@@ -637,14 +608,14 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"FruitTrees are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for fruit trees");
                 Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
+                Rectangle extendedRect = new(0, index * TileSheetExtensions.MAXTILESHEETHEIGHT, tex.Data.Width, maxYs[index]);
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
             }
 
@@ -662,7 +633,9 @@ namespace JsonAssets.Framework
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startPos = ContentInjector1.BigCraftableRect(Mod.StartingBigCraftableId);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -684,23 +657,12 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture.GetData(array, 0, size);
-                        rented = new(array, texture.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {big.Name} sprites @ {rect}");
                     rented.PatchImage(big.Texture, null, patchLoc);
 
-                    if (!maxYs.TryGetValue(ts, out int maxY))
-                        maxY = 0;
-
-                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
-
+                    int maxY;
                     if (big.ReserveExtraIndexCount > 0)
                     {
                         for (int i = 0; i < big.ReserveExtraIndexCount; ++i)
@@ -709,33 +671,28 @@ namespace JsonAssets.Framework
                             var extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
                             int extraTS = extraTarget.TileSheet;
 
-                            patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
-
                             if (extraTS != ts)
                             {
+                                // update maxY here too.
+                                if (!maxYs.TryGetValue(ts, out maxY))
+                                    maxY = 0;
+                                maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                                 // remainder of logic can refer to the new ts.
                                 ts = extraTS;
-                                if (!scratch.TryGetValue(ts, out rented))
-                                {
-                                    var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                                    var array = ArrayPool<Color>.Shared.Rent(size);
-                                    texture.GetData(array, 0, size);
-                                    rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                                    scratch[ts] = rented;
-                                }
+                                rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
                             }
+
+                            patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
 
                             Log.Verbose(() => $"Injecting {big.Name} reserved extra sprite {i + 1} @ {extraRect}");
                             rented.PatchImage(big.ExtraTextures[i], null, patchLoc);
-
-                            // update maxY here too.
-                            if (!maxYs.TryGetValue(ts, out maxY))
-                                maxY = 0;
-                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                         }
                     }
 
-
+                    if (!maxYs.TryGetValue(ts, out maxY))
+                        maxY = 0;
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                 }
                 catch (Exception e)
                 {
@@ -743,7 +700,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Big craftables are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -768,7 +725,9 @@ namespace JsonAssets.Framework
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startPos = ContentInjector1.HatRect(Mod.StartingHatId);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height,tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -789,14 +748,7 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture?.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {hat.Name} sprites @ {rect}");
                     rented.PatchImage(hat.Texture, null, patchLoc);
@@ -812,7 +764,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Hats are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -837,7 +789,9 @@ namespace JsonAssets.Framework
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startPos = ContentInjector1.WeaponRect(Mod.StartingWeaponId);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             RawDataRented scratch = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             int maxY = tex.Data.Height;
 
@@ -863,7 +817,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Weapons are now ({tex.Data.Width}, {tex.Data.Height})");
 
             Log.DebugOnlyLog($"Patching into 0th extended tilesheet for weapons.");
@@ -882,7 +836,9 @@ namespace JsonAssets.Framework
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startPos = ContentInjector1.ShirtRectPlain(Mod.StartingShirtTextureIndex);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -915,49 +871,30 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture?.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     rented.PatchImage(shirt.TextureMale, null, patchLoc);
 
-                    if (!maxYs.TryGetValue(ts, out int maxY))
-                        maxY = 0;
-                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
-
+                    int maxY;
                     if (shirt.Dyeable)
                     {
                         var extraRect = ContentInjector1.ShirtRectDye(shirt.GetMaleIndex());
                         var extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
                         int extraTS = extraTarget.TileSheet;
 
-                        patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
-
                         if (extraTS != ts)
                         {
+                            if (!maxYs.TryGetValue(ts, out maxY))
+                                maxY = 0;
+                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                             // remainder of logic can refer to the new ts.
                             ts = extraTS;
-                            if (!scratch.TryGetValue(ts, out rented))
-                            {
-                                var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                                var array = ArrayPool<Color>.Shared.Rent(size);
-                                texture?.GetData(array, 0, size);
-                                rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                                scratch[ts] = rented;
-                            }
+                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
                         }
 
+                        patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
                         rented.PatchImage(shirt.TextureMaleColor, null, patchLoc);
-
-                        // update maxY here too.
-                        if (!maxYs.TryGetValue(ts, out maxY))
-                            maxY = 0;
-                        maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                     }
                     if (shirt.HasFemaleVariant)
                     {
@@ -965,28 +902,19 @@ namespace JsonAssets.Framework
                         var extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
                         int extraTS = extraTarget.TileSheet;
 
-                        patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
-
                         if (extraTS != ts)
                         {
+                            if (!maxYs.TryGetValue(ts, out maxY))
+                                maxY = 0;
+                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                             // remainder of logic can refer to the new ts.
                             ts = extraTS;
-                            if (!scratch.TryGetValue(ts, out rented))
-                            {
-                                var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                                var array = ArrayPool<Color>.Shared.Rent(size);
-                                texture?.GetData(array, 0, size);
-                                rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                                scratch[ts] = rented;
-                            }
+                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
                         }
 
+                        patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
                         rented.PatchImage(shirt.TextureFemale, null, patchLoc);
-
-                        // update maxY here too.
-                        if (!maxYs.TryGetValue(ts, out maxY))
-                            maxY = 0;
-                        maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
 
                         if (shirt.Dyeable)
                         {
@@ -994,30 +922,25 @@ namespace JsonAssets.Framework
                             extraTarget = TileSheetExtensions.GetAdjustedTileSheetTarget(asset.NameWithoutLocale.BaseName, extraRect);
                             extraTS = extraTarget.TileSheet;
 
-                            patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
-
                             if (extraTS != ts)
                             {
+                                if (!maxYs.TryGetValue(ts, out maxY))
+                                    maxY = 0;
+                                maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                                 // remainder of logic can refer to the new ts.
                                 ts = extraTS;
-                                if (!scratch.TryGetValue(ts, out rented))
-                                {
-                                    var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                                    var array = ArrayPool<Color>.Shared.Rent(size);
-                                    texture?.GetData(array, 0, size);
-                                    rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                                    scratch[ts] = rented;
-                                }
+                                rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
                             }
 
+                            patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
                             rented.PatchImage(shirt.TextureFemaleColor, null, patchLoc);
-
-                            // update maxY here too.
-                            if (!maxYs.TryGetValue(ts, out maxY))
-                                maxY = 0;
-                            maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
                         }
                     }
+                    if (!maxYs.TryGetValue(ts, out maxY))
+                        maxY = 0;
+                    maxYs[ts] = Math.Max(maxY, patchLoc.Bottom);
+
                 }
                 catch (Exception e)
                 {
@@ -1025,7 +948,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Shirts are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -1050,7 +973,9 @@ namespace JsonAssets.Framework
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startPos = ContentInjector1.PantsRect(Mod.StartingPantsTextureIndex);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -1068,14 +993,7 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture?.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {pants.Name} sprites @ {ContentInjector1.PantsRect(pants.GetTextureIndex())}");
                     rented.PatchImage(pants.Texture, null, patchLoc);
@@ -1090,7 +1008,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Pants are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -1114,7 +1032,9 @@ namespace JsonAssets.Framework
             var tex = asset.AsImage();
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, size - tex.Data.Width * tex.Data.Height);
+
+            Rectangle startPos = ContentInjector1.BootsRect(Mod.StartingBootsId);
+            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
@@ -1132,14 +1052,7 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    if (!scratch.TryGetValue(ts, out var rented))
-                    {
-                        var texture = TileSheetExtensions.GetTileSheet(asset.NameWithoutLocale.BaseName, ts);
-                        var array = ArrayPool<Color>.Shared.Rent(size);
-                        texture?.GetData(array, 0, size);
-                        rented = new(array, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
-                        scratch[ts] = rented;
-                    }
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
 
                     Log.Verbose(() => $"Injecting {boots.Name} sprites @ {rect}");
                     rented.PatchImage(boots.TextureColor, null, patchLoc);
@@ -1155,7 +1068,7 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendImage(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
                 Log.Trace($"Boots are now ({tex.Data.Width}, {tex.Data.Height})");
 
             foreach (var (index, data) in scratch)
@@ -1172,7 +1085,40 @@ namespace JsonAssets.Framework
         }
         #endregion
 
-        #region rectangles
+
+        private static RawDataRented GetScratchBuffer(
+            SortedList<int, RawDataRented> scratch,
+            int index,
+            string assetName,
+            int minsize,
+            int width)
+        {
+            if (!scratch.TryGetValue(index, out var rented))
+            {
+                var texture = TileSheetExtensions.GetTileSheet(assetName, index);
+                var array = ArrayPool<Color>.Shared.Rent(minsize);
+                texture?.GetData(array, 0, minsize);
+                rented = new(array, width, TileSheetExtensions.MAXTILESHEETHEIGHT);
+                scratch[index] = rented;
+            }
+            return rented;
+        }
+
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposable outlives scope.")]
+        private static bool ExtendAsset(
+            this IAssetDataForImage asset,
+            int minWidth,
+            int minHeight)
+        {
+            if (asset.Data.Width >= minWidth && asset.Data.Height >= minHeight)
+                return false;
+
+            Texture2D texture = new(Game1.graphics.GraphicsDevice, Math.Max(asset.Data.Width, minWidth), Math.Max(asset.Data.Height, minHeight));
+            asset.ReplaceWith(texture);
+            return true;
+        }
+
+    #region rectangles
         internal static Rectangle ObjectRect(int index)
         {
             return new(index % 24 * 16, index / 24 * 16, 16, 16);

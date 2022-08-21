@@ -1935,7 +1935,12 @@ namespace JsonAssets
 
         private void AssignTextureIndices(string type, int starting, List<DataSeparateTextureIndex> data)
         {
+            if (data.Count == 0)
+                return;
+
             data.Sort((dni1, dni2) => string.Compare(dni1.Name, dni2.Name, StringComparison.InvariantCulture));
+
+            Log.Trace($"Assiging {type} ids starting at {starting}: {data.Count} items");
 
             Dictionary<string, int> idxs = new Dictionary<string, int>();
 
