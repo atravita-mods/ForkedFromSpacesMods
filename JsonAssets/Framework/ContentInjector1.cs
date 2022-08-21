@@ -406,11 +406,12 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startpoint = ContentInjector1.ObjectRect(Mod.StartingObjectId);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startpoint.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startpoint.Y < tex.Data.Height)
+                tex.Data.GetData(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (tex.Data.Height - startpoint.Y));
+
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -495,7 +496,8 @@ namespace JsonAssets.Framework
             }
 
             // extend spritesheet
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"SpringObjects are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -503,8 +505,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for objects");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startpoint.Y, data.Width, maxYs[index] - startpoint.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -526,11 +539,11 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startpoint = ContentInjector1.CropRect(Mod.StartingCropId);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startpoint.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startpoint.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -564,7 +577,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"Crops are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -572,8 +586,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for crops");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startpoint.Y, data.Width, maxYs[index] - startpoint.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -595,11 +620,12 @@ namespace JsonAssets.Framework
 
             Rectangle startpoint = ContentInjector1.FruitTreeRect(Mod.StartingFruitTreeId);
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startpoint.Y - tex.Data.Height));
+
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startpoint.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -634,7 +660,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"FruitTrees are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -642,8 +669,20 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for fruit trees");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startpoint.Y, data.Width, maxYs[index] - startpoint.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
+
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -665,11 +704,12 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startPos = ContentInjector1.BigCraftableRect(Mod.StartingBigCraftableId);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
+
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startPos.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -732,7 +772,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"Big craftables are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -740,8 +781,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for bigCraftables");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startPos.Y, data.Width, maxYs[index] - startPos.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -763,11 +815,12 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startPos = ContentInjector1.HatRect(Mod.StartingHatId);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height,tex.Data.Width * (startPos.Y - tex.Data.Height));
+
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startPos.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -801,7 +854,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"Hats are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -809,8 +863,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for hats.");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startPos.Y, data.Width, maxYs[index] - startPos.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -832,8 +897,9 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startPos = ContentInjector1.WeaponRect(Mod.StartingWeaponId);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+
+            if (startPos.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             RawDataRented scratch = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             int maxY = tex.Data.Height;
 
@@ -860,12 +926,12 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            if (tex.ExtendImage(tex.Data.Width, maxY))
                 Log.Trace($"Weapons are now ({tex.Data.Width}, {tex.Data.Height})");
 
             Log.DebugOnlyLog($"Patching into 0th extended tilesheet for weapons.");
             scratch.Shrink(scratch.Width, maxY);
-            Rectangle sourceRect = new(0, 0, scratch.Width, maxY);
+            Rectangle sourceRect = new(0, startPos.Y, scratch.Width, maxY - startPos.Y);
             tex.PatchExtendedTileSheet(scratch, sourceRect, sourceRect);
 
             // dispose scratch (returns buffers)
@@ -882,11 +948,12 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startPos = ContentInjector1.ShirtRectPlain(Mod.StartingShirtTextureIndex);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
+
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startPos.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -992,7 +1059,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"Shirts are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -1000,8 +1068,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for shirts");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startPos.Y, data.Width, maxYs[index] - startPos.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -1023,11 +1102,11 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startPos = ContentInjector1.PantsRect(Mod.StartingPantsTextureIndex);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startPos.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -1057,7 +1136,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"Pants are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -1065,8 +1145,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for pants");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new Rectangle(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startPos.Y, data.Width, maxYs[index] - startPos.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -1087,11 +1178,11 @@ namespace JsonAssets.Framework
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
             Rectangle startPos = ContentInjector1.BootsRect(Mod.StartingBootsId);
-            Array.Clear(initial, tex.Data.Width * tex.Data.Height, tex.Data.Width * (startPos.Y - tex.Data.Height));
             SortedList<int, RawDataRented> scratch = new();
             SortedList<int, int> maxYs = new();
 
-            tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
+            if (startPos.Y < tex.Data.Height)
+                tex.Data.GetData(initial, 0, tex.Data.Width * tex.Data.Height);
             scratch[0] = new(initial, tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT);
             maxYs[0] = tex.Data.Height;
 
@@ -1122,7 +1213,8 @@ namespace JsonAssets.Framework
                 }
             }
 
-            if (tex.ExtendAsset(tex.Data.Width, TileSheetExtensions.MAXTILESHEETHEIGHT))
+            int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
+            if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"Boots are now ({tex.Data.Width}, {tex.Data.Height})");
 
             int currentY = 0;
@@ -1130,8 +1222,19 @@ namespace JsonAssets.Framework
             {
                 Log.DebugOnlyLog($"Patching into {index}th extended tilesheet for boots.");
                 data.Shrink(data.Width, maxYs[index]);
-                Rectangle sourceRect = new(0, 0, data.Width, maxYs[index]);
-                Rectangle extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                Rectangle sourceRect;
+                Rectangle extendedRect;
+
+                if (index == 0)
+                {
+                    sourceRect = new(0, startPos.Y, data.Width, maxYs[index] - startPos.Y);
+                    extendedRect = sourceRect;
+                }
+                else
+                {
+                    sourceRect = new(0, 0, data.Width, maxYs[index]);
+                    extendedRect = new(0, currentY, tex.Data.Width, maxYs[index]);
+                }
                 tex.PatchExtendedTileSheet(data, sourceRect, extendedRect);
 
                 currentY += maxYs[index];
@@ -1160,20 +1263,6 @@ namespace JsonAssets.Framework
                 scratch[index] = rented;
             }
             return rented;
-        }
-
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposable outlives scope.")]
-        private static bool ExtendAsset(
-            this IAssetDataForImage asset,
-            int minWidth,
-            int minHeight)
-        {
-            if (asset.Data.Width >= minWidth && asset.Data.Height >= minHeight)
-                return false;
-
-            Texture2D texture = new(Game1.graphics.GraphicsDevice, Math.Max(asset.Data.Width, minWidth), Math.Max(asset.Data.Height, minHeight));
-            asset.ReplaceWith(texture);
-            return true;
         }
 
         private static string GetTilesheetName(this string assetName, int ts)
