@@ -122,6 +122,8 @@ namespace JsonAssets
             return this.Api ??= new Api(this.LoadData);
         }
 
+        #region commands
+
         private Dictionary<string, KeyValuePair<int, int>> MakeIdMapping(IDictionary<string, int> oldIds, IDictionary<string, int> newIds)
         {
             var ret = new Dictionary<string, KeyValuePair<int, int>>();
@@ -199,6 +201,8 @@ namespace JsonAssets
             }
         }
 
+        #endregion
+
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
         {
             this.ExpandedPreconditionsUtility = this.Helper.ModRegistry.GetApi<IExpandedPreconditionsUtilityApi>("Cherry.ExpandedPreconditionsUtility");
@@ -209,6 +213,7 @@ namespace JsonAssets
             this.Helper.Events.GameLoop.UpdateTicked += this.OnTick;
         }
 
+        #region loading
         private bool FirstTick = true;
         private void OnTick(object sender, UpdateTickedEventArgs e)
         {
@@ -430,6 +435,16 @@ namespace JsonAssets
             else
                 this.DupCrops[crop.Name] = source;
 
+
+            if (this.DupObjects.TryGetValue(crop.Seed.Name, out var oldmanifest))
+            {
+                Log.Error($"{crop.Seed.Name} previously added by {oldmanifest.UniqueID}, this may cause errors. Crop {crop.Name} by {source.Name} will not be added");
+                return;
+            }
+            else
+                this.DupObjects[crop.Seed.Name] = source;
+
+
             // save crop data
             this.Crops.Add(crop);
 
@@ -483,15 +498,6 @@ namespace JsonAssets
                         Object = () => new SObject(crop.Seed.Id, int.MaxValue, false, crop.Seed.Price)
                     });
                 }
-            }
-
-            if (this.DupObjects.TryGetValue(crop.Seed.Name, out var oldmanifest))
-            {
-                Log.Error($"{crop.Seed.Name} previously added by {oldmanifest.UniqueID}, this may cause errors.");
-            }
-            else
-            {
-                this.DupObjects[crop.Seed.Name] = source;
             }
 
             // save seed data
@@ -1015,6 +1021,8 @@ namespace JsonAssets
             this.Fences.Add(fence);
             this.RegisterObject(source, fence.CorrespondingObject, translations);
         }
+
+        #endregion
 
         /// <summary>Get whether conditions in the Expanded Preconditions Utility (EPU) format match the current context.</summary>
         /// <param name="conditions">The EPU conditions to check.</param>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -97,7 +98,7 @@ namespace SpaceCore
         private const string MsgData = "spacechase0.SpaceCore.SkillData";
         private const string MsgExperience = "spacechase0.SpaceCore.SkillExperience";
 
-        internal static Dictionary<string, Skill> SkillsByName = new();
+        internal static Dictionary<string, Skill> SkillsByName = new(StringComparer.OrdinalIgnoreCase);
         private static Dictionary<long, Dictionary<string, int>> Exp = new();
         internal static List<KeyValuePair<string, int>> NewLevels = new();
 
@@ -127,7 +128,8 @@ namespace SpaceCore
 
             foreach (var skill in Skills.SkillsByName)
             {
-                if (skill.Key.ToLower() == name.ToLower() || skill.Value.GetName().ToLower() == name.ToLower())
+                if (skill.Key.Equals(name, StringComparison.OrdinalIgnoreCase)
+                    || skill.Value.GetName().Equals(name, StringComparison.OrdinalIgnoreCase))
                     return skill.Value;
             }
 
@@ -208,8 +210,7 @@ namespace SpaceCore
 
             foreach (var skill in Skills.SkillsByName)
             {
-                if (!skillExp.ContainsKey(skill.Key))
-                    skillExp.Add(skill.Key, 0);
+                _ = skillExp.TryAdd(skill.Key, 0);
             }
 
             using var stream = new MemoryStream();
@@ -299,6 +300,7 @@ namespace SpaceCore
                     File.Delete(Skills.LegacyFilePath);
                 }
             }
+            SpaceCore.Instance.Helper.Events.GameLoop.Saved -= OnSaved;
         }
 
         /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>
@@ -342,7 +344,10 @@ namespace SpaceCore
         /// <param name="e">The event arguments.</param>
         private static void OnWarped(object sender, WarpedEventArgs e)
         {
-            if (e.IsLocalPlayer && SpaceCore.Instance.Helper.ModRegistry.IsLoaded("cantorsdust.AllProfessions"))
+            if (!SpaceCore.Instance.Helper.ModRegistry.IsLoaded("cantorsdust.AllProfessions"))
+                SpaceCore.Instance.Helper.Events.Player.Warped -= OnWarped;
+
+            if (e.IsLocalPlayer)
             {
                 foreach (var skill in Skills.SkillsByName)
                 {
@@ -368,6 +373,13 @@ namespace SpaceCore
         {
             if (Game1.activeClickableMenu != null || Game1.eventUp)
                 return;
+
+            var api = SpaceCore.Instance.Helper.ModRegistry.GetApi<IExperienceBarsApi>("spacechase0.ExperienceBars");
+            if (api == null)
+            {
+                SpaceCore.Instance.Helper.Events.Display.RenderedHud -= Skills.OnRenderedHud;
+                return;
+            }
 
             // draw exp bars
             foreach (var skillPair in Skills.SkillsByName)
@@ -395,12 +407,6 @@ namespace SpaceCore
                     progress = -1;
                 }
 
-                var api = SpaceCore.Instance.Helper.ModRegistry.GetApi<IExperienceBarsApi>("spacechase0.ExperienceBars");
-                if (api == null)
-                {
-                    SpaceCore.Instance.Helper.Events.Display.RenderedHud -= Skills.OnRenderedHud;
-                    return;
-                }
                 api.DrawExperienceBar(skill.Icon ?? Game1.staminaRect, level, progress, skill.ExperienceBarColor);
             }
         }

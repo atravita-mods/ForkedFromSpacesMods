@@ -1,16 +1,13 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using JsonAssets.Data;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using SpaceCore;
 using SpaceCore.AssetManagers.Models;
 using SpaceShared;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewValley;
 using StardewValley.GameData.Crafting;
 
 namespace JsonAssets.Framework
@@ -132,7 +129,6 @@ namespace JsonAssets.Framework
         #region data
         private static void InjectDataObjectInformation(IAssetData asset)
         {
-#warning - crosscheck boots?
             var data = asset.AsDictionary<int, string>().Data;
             foreach (var obj in Mod.instance.Objects)
             {
@@ -157,7 +153,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    string tags = string.Join(", ", obj.ContextTags);
+                    string tags = string.Join(',', obj.ContextTags);
                     if (Log.IsVerbose)
                         Log.Trace($"Injecting to object context tags: {obj.Name}: {tags}");
                     if (!data.TryGetValue(obj.Name, out string prevTags) || string.IsNullOrWhiteSpace(prevTags))
@@ -499,6 +495,9 @@ namespace JsonAssets.Framework
             int newHeight = scratch.Count > 1 ? TileSheetExtensions.MAXTILESHEETHEIGHT : maxYs[0];
             if (tex.ExtendImage(tex.Data.Width, newHeight))
                 Log.Trace($"SpringObjects are now ({tex.Data.Width}, {tex.Data.Height})");
+
+            if (Log.IsVerbose)
+                Log.Trace($"{scratch.Count - 1} extended spritesheets used.");
 
             int currentY = 0;
             foreach (var (index, data) in scratch)
