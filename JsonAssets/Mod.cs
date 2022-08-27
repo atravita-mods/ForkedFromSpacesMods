@@ -637,7 +637,6 @@ namespace JsonAssets
             else
                 this.DupBigCraftables[craftable.Name] = source;
 
-
             // save data
             this.BigCraftables.Add(craftable);
 
@@ -1680,7 +1679,7 @@ namespace JsonAssets
                 Task weapons = Task.Run(() => File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-weapons.json"), JsonConvert.SerializeObject(this.WeaponIds)));
                 Task clothing = Task.Run(() => File.WriteAllText(Path.Combine(Constants.CurrentSavePath, "JsonAssets", "ids-clothing.json"), JsonConvert.SerializeObject(this.ClothingIds)));
 
-                Task.WaitAll(objects, crops, fruitTrees, bigs, hats, weapons, clothing);
+                // Task.WaitAll(objects, crops, fruitTrees, bigs, hats, weapons, clothing);
             }
             this.Helper.Events.GameLoop.Saving -= this.OnSaving;
         }
@@ -1814,10 +1813,10 @@ namespace JsonAssets
             // favor spans for now, but maybe building a lookup dictionary in the opposite direction would be
             // more performant.
             var dataSpan = datastring.AsSpan().Trim();
-            foreach (var obj in Game1.objectInformation)
+            foreach (var (key, value) in Game1.objectInformation)
             {
-                if (dataSpan.Equals(JAUtils.GetNameFrom(obj.Value), StringComparison.OrdinalIgnoreCase))
-                    return obj.Key;
+                if (value is not null && dataSpan.Equals(JAUtils.GetNameFrom(value), StringComparison.OrdinalIgnoreCase))
+                    return key;
             }
 
             Log.Warn($"No idea what '{data}' is!");
@@ -2280,26 +2279,80 @@ namespace JsonAssets
             switch (item)
             {
                 case Hat hat:
+                {
+                    if (this.VanillaHatIds.Contains(hat.which.Value))
+                        return false;
+                    if (this.HatIds.TryGetValue(hat.Name, out int val))
+                    {
+                        if (val != hat.which.Value)
+                        {
+                            Log.Trace($"Fixing hat {hat.Name} with new id {val} by name");
+                            hat.which.Value = val;
+                        }
+                        return false;
+                    }
                     return this.FixId(this.OldHatIds, this.HatIds, hat.which, this.VanillaHatIds);
-
+                }
                 case MeleeWeapon weapon:
+                {
+                    if (this.VanillaWeaponIds.Contains(weapon.InitialParentTileIndex))
+                        return false;
+                    if (this.WeaponIds.TryGetValue(weapon.Name, out int val))
+                    {
+                        if (val != weapon.InitialParentTileIndex)
+                        {
+                            Log.Trace($"Fixing weapon {weapon.Name} with new id {val} by name");
+                            weapon.InitialParentTileIndex = val;
+                            weapon.CurrentParentTileIndex = val;
+                            weapon.IndexOfMenuItemView = val;
+                        }
+                        return false;
+                    }
                     return
                         this.FixId(this.OldWeaponIds, this.WeaponIds, weapon.initialParentTileIndex, this.VanillaWeaponIds)
                         || this.FixId(this.OldWeaponIds, this.WeaponIds, weapon.currentParentTileIndex, this.VanillaWeaponIds)
                         || this.FixId(this.OldWeaponIds, this.WeaponIds, weapon.indexOfMenuItemView, this.VanillaWeaponIds);
-
+                }
                 case Ring ring:
                     return this.FixRing(ring);
 
                 case Clothing clothing:
+                {
+                    if (this.VanillaClothingIds.Contains(clothing.ParentSheetIndex))
+                        return false;
+                    if (this.ClothingIds.TryGetValue(clothing.Name, out int val))
+                    {
+                        if (val != clothing.ParentSheetIndex)
+                        {
+                            Log.Trace($"Fixing clothing {clothing.Name} with new id {val} by name");
+                            clothing.ParentSheetIndex = val;
+                        }
+                        return false;
+                    }
                     return this.FixId(this.OldClothingIds, this.ClothingIds, clothing.parentSheetIndex, this.VanillaClothingIds);
-
+                }
                 case Boots boots:
-                    return this.FixId(this.OldObjectIds, this.ObjectIds, boots.indexInTileSheet, this.VanillaObjectIds);
-
+                {
+                    if (this.VanillaObjectIds.Contains(boots.indexInTileSheet.Value))
+                        return false;
+                    if (this.ObjectIds.TryGetValue(boots.Name, out int val))
+                    {
+                        if (val != boots.indexInTileSheet.Value)
+                        {
+                            Log.Trace($"Fixing clothing {boots.Name} with new id {val} by name");
+                            boots.indexInTileSheet.Value = val;
+                        }
+                    }
+                    else if (this.FixId(this.OldObjectIds, this.ObjectIds, boots.indexInTileSheet, this.VanillaObjectIds))
+                        return true;
+                    var bootdata = this.Boots.FirstOrDefault((boot) => boot.GetObjectId() == boots.indexInTileSheet.Value);
+                    boots.indexInColorSheet.Value = bootdata is null ? 0 : bootdata.GetTextureIndex();
+                    return false;
+                }
                 case SObject obj:
                     if (obj is Chest chest)
                     {
+                        Log.Trace($"Fixing chest at {chest.TileLocation}");
                         if (this.FixId(this.OldBigCraftableIds, this.BigCraftableIds, chest.parentSheetIndex, this.VanillaBigCraftableIds))
                             chest.ParentSheetIndex = 130;
                         else
@@ -2324,7 +2377,17 @@ namespace JsonAssets
                         {
                             if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.preservedParentSheetIndex, this.VanillaObjectIds))
                                 obj.preservedParentSheetIndex.Value = -1;
-                            if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.parentSheetIndex, this.VanillaObjectIds))
+
+                            if (!this.VanillaObjectIds.Contains(obj.ParentSheetIndex)
+                                && this.ObjectIds.TryGetValue(obj.Name, out int val))
+                            {
+                                if (val != obj.ParentSheetIndex)
+                                {
+                                    Log.Trace($"Fixing clothing {obj.Name} with new id {val} by name");
+                                    obj.ParentSheetIndex = val;
+                                }
+                            }
+                            else if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.parentSheetIndex, this.VanillaObjectIds))
                                 return true;
                         }
                         else if (this.FixId(this.OldBigCraftableIds, this.BigCraftableIds, obj.parentSheetIndex, this.VanillaBigCraftableIds))
@@ -2333,7 +2396,17 @@ namespace JsonAssets
 
                     if (obj.heldObject.Value != null)
                     {
-                        if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.heldObject.Value.parentSheetIndex, this.VanillaObjectIds))
+
+                        if (!this.VanillaObjectIds.Contains(obj.ParentSheetIndex)
+                                && this.ObjectIds.TryGetValue(obj.Name, out int val))
+                        {
+                            if (val != obj.ParentSheetIndex)
+                            {
+                                Log.Trace($"Fixing clothing {obj.Name} with new id {val} by name");
+                                obj.ParentSheetIndex = val;
+                            }
+                        }
+                        else if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.heldObject.Value.parentSheetIndex, this.VanillaObjectIds))
                             obj.heldObject.Value = null;
 
                         if (obj.heldObject.Value is Chest innerChest)
@@ -2353,6 +2426,7 @@ namespace JsonAssets
         [SuppressMessage("SMAPI.CommonErrors", "AvoidNetField")]
         private void FixCharacter(Character character)
         {
+            Log.Trace($"Fixing character {character.Name}");
             switch (character)
             {
                 case Horse horse:
@@ -2438,8 +2512,17 @@ namespace JsonAssets
             if (ring is null)
                 return false;
 
-            // main ring
-            if (this.FixId(this.OldObjectIds, this.ObjectIds, ring.indexInTileSheet, this.VanillaObjectIds))
+            // fix main ring
+            if (!this.VanillaObjectIds.Contains(ring.indexInTileSheet.Value)
+                && this.ObjectIds.TryGetValue(ring.Name, out int index))
+            {
+                if (ring.indexInTileSheet.Value != index)
+                {
+                    Log.Trace($"Fixing hat {ring.Name} with new id {index} by name");
+                    ring.indexInTileSheet.Value = index;
+                }
+            }
+            else if (this.FixId(this.OldObjectIds, this.ObjectIds, ring.indexInTileSheet, this.VanillaObjectIds))
                 return true;
 
             // inner rings
@@ -2469,6 +2552,8 @@ namespace JsonAssets
             if (this.LocationsFixedAlready.Contains(loc.NameOrUniqueName))
                 return;
             this.LocationsFixedAlready.Add(loc.NameOrUniqueName);
+
+            Log.Trace($"Fixing {loc.NameOrUniqueName}");
 
             switch (loc)
             {
@@ -2501,6 +2586,7 @@ namespace JsonAssets
             foreach (Vector2 rem in toRemove)
                 loc.terrainFeatures.Remove(rem);
 
+            /*
             toRemove.Clear();
             foreach (var (key, obj) in loc.netObjects.Pairs)
             {
@@ -2511,6 +2597,7 @@ namespace JsonAssets
             {
                 loc.netObjects.Remove(rem);
             }
+            */
 
             toRemove.Clear();
             foreach (var (key, obj) in loc.objects.Pairs)
