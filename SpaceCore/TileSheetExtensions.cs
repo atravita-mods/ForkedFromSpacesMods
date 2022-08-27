@@ -76,8 +76,12 @@ namespace SpaceCore
 
         public static void RegisterExtendedTileSheet(string asset, int unitSize)
         {
-            if (TileSheetExtensions.ExtendedTextureAssets.ContainsKey(asset))
+            if (TileSheetExtensions.ExtendedTextureAssets.TryGetValue(asset, out var extension))
+            {
+                if (extension.UnitSize != unitSize)
+                    Log.Error($"{asset} previously registered with unitSize {extension.UnitSize}, cannot be re-registered with differing unit size {unitSize}");
                 return;
+            }
 
             var data = new ExtensionData(asset, unitSize)
             {
@@ -108,7 +112,7 @@ namespace SpaceCore
 
             while (data.Extensions.Count <= index - 1)
             {
-                Log.DebugOnlyLog($"Adding extended tilesheet {index} for {tex.Name ?? "unknown texture"}");
+                Log.DebugOnlyLog($"Adding extended tilesheet {data.Extensions.Count} for {tex.Name ?? "unknown texture"}");
                 data.Extensions.Add(new Texture2D(Game1.graphics.GraphicsDevice, tex.Width, TileSheetExtensions.MAXTILESHEETHEIGHT));
             }
 
