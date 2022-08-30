@@ -2388,7 +2388,8 @@ namespace JsonAssets
                     {
                         if (!obj.bigCraftable.Value)
                         {
-                            if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.preservedParentSheetIndex, this.VanillaObjectIds))
+                            if (obj.Name != "Drum Block" && obj.Name != "Flute Block" &&
+                                this.FixId(this.OldObjectIds, this.ObjectIds, obj.preservedParentSheetIndex, this.VanillaObjectIds))
                                 obj.preservedParentSheetIndex.Value = -1;
 
                             if (!this.VanillaObjectIds.Contains(obj.ParentSheetIndex)
@@ -2583,9 +2584,8 @@ namespace JsonAssets
 
             // TMXL fixes things before the main ID fixing, then adds them to the main location list
             // So things would get double fixed without this.
-            if (this.LocationsFixedAlready.Contains(loc.NameOrUniqueName))
+            if (!this.LocationsFixedAlready.Add(loc.NameOrUniqueName))
                 return;
-            this.LocationsFixedAlready.Add(loc.NameOrUniqueName);
 
             Log.Trace($"Fixing {loc.NameOrUniqueName}");
 
