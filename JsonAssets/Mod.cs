@@ -70,6 +70,7 @@ namespace JsonAssets
 
             helper.ConsoleCommands.Add("ja_summary", "Summary of JA ids", this.DoCommands);
             helper.ConsoleCommands.Add("ja_unfix", "Unfix IDs once, in case IDs were double fixed.", this.DoCommands);
+            helper.ConsoleCommands.Add("ja_fix", "Fix IDs once.", this.DoCommands);
 
             helper.Events.Display.MenuChanged += this.OnMenuChanged;
             helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
@@ -198,6 +199,16 @@ namespace JsonAssets
                 }
                 this.LocationsFixedAlready.Clear();
                 this.FixIdsEverywhere(reverse: true);
+            }
+            else if (cmd is "ja_fix")
+            {
+                if (!Context.IsMainPlayer)
+                {
+                    Log.Warn("Only the main player can use this command!");
+                    return;
+                }
+                this.LocationsFixedAlready.Clear();
+                this.FixIdsEverywhere(reverse: false);
             }
         }
 
@@ -1373,6 +1384,11 @@ namespace JsonAssets
             //initStuff(loadIdFiles: false);
         }
 
+        private bool DoesntNeedDeshuffling(IDictionary<string, int> oldIds, IDictionary<string, int> newIds)
+            => oldIds.Count == 0
+                || (oldIds.Count == newIds.Count 
+                    && oldIds.All((kvp) => newIds.TryGetValue(kvp.Key, out int val) && val == kvp.Value));
+
         private void OnLoadStageChanged(object sender, LoadStageChangedEventArgs e)
         {
             if (e.NewStage == StardewModdingAPI.Enums.LoadStage.SaveParsed)
@@ -1382,8 +1398,21 @@ namespace JsonAssets
             }
             else if (e.NewStage == StardewModdingAPI.Enums.LoadStage.SaveLoadedLocations)
             {
-                Log.Trace("Fixing IDs");
-                this.FixIdsEverywhere();
+                if (this.DoesntNeedDeshuffling(this.OldObjectIds, this.ObjectIds)
+                    && this.DoesntNeedDeshuffling(this.OldCropIds, this.OldCropIds)
+                    && this.DoesntNeedDeshuffling(this.OldFruitTreeIds, this.FruitTreeIds)
+                    && this.DoesntNeedDeshuffling(this.OldHatIds, this.HatIds)
+                    && this.DoesntNeedDeshuffling(this.OldBigCraftableIds, this.BigCraftableIds)
+                    && this.DoesntNeedDeshuffling(this.OldWeaponIds, this.WeaponIds)
+                    && this.DoesntNeedDeshuffling(this.OldClothingIds, this.ClothingIds))
+                {
+                    Log.Trace("Nothing has changed, deshuffling unnecessary.");
+                }
+                else
+                {
+                    Log.Trace("Fixing IDs");
+                    this.FixIdsEverywhere();
+                }
             }
             else if (e.NewStage == StardewModdingAPI.Enums.LoadStage.Loaded)
             {
@@ -2388,8 +2417,8 @@ namespace JsonAssets
                     {
                         if (!obj.bigCraftable.Value)
                         {
-                            if (obj.Name != "Drum Block" && obj.Name != "Flute Block" &&
-                                this.FixId(this.OldObjectIds, this.ObjectIds, obj.preservedParentSheetIndex, this.VanillaObjectIds))
+                            if (obj.Name != "Drum Block" && obj.Name != "Flute Block"
+                                && this.FixId(this.OldObjectIds, this.ObjectIds, obj.preservedParentSheetIndex, this.VanillaObjectIds))
                                 obj.preservedParentSheetIndex.Value = -1;
 
                             if (!this.VanillaObjectIds.Contains(obj.ParentSheetIndex)
@@ -2659,7 +2688,7 @@ namespace JsonAssets
                 {
                     if (this.FixItem(obj))
                         toRemove.Add(key);
-                    else if (obj.ParentSheetIndex == 126 && obj.Quality != 0) // Alien rarecrow stores what ID is it is wearing here
+                    else if (obj.ParentSheetIndex == 126 && obj.Quality != 0 && obj.bigCraftable.Value) // Alien rarecrow stores what ID is it is wearing here
                     {
                         obj.Quality--;
                         if (this.FixId(this.OldHatIds, this.HatIds, obj.quality, this.VanillaHatIds))
