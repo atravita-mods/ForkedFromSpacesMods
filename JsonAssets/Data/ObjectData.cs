@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using SpaceShared;
 using SObject = StardewValley.Object;
 using StardewModdingAPI;
+using JsonAssets.Framework.Internal;
 
 namespace JsonAssets.Data
 {
@@ -77,13 +78,13 @@ namespace JsonAssets.Data
         {
             if (this.Edibility != SObject.inedible)
             {
-                StringBuilder sb = new();
+                StringBuilder sb = StringBuilderCache.Acquire();
                 sb.Append($"{this.Name}/{this.Price}/{this.Edibility}/")
                 .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{this.Category} {this.Category:D}")
                 .Append($"/{this.LocalizedName()}/{this.LocalizedDescription()}/")
                 .Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
                 .Append($"{this.EdibleBuffs.Farming} {this.EdibleBuffs.Fishing} {this.EdibleBuffs.Mining} 0 {this.EdibleBuffs.Luck} {this.EdibleBuffs.Foraging} 0 {this.EdibleBuffs.MaxStamina} {this.EdibleBuffs.MagnetRadius} {this.EdibleBuffs.Speed} {this.EdibleBuffs.Defense} {this.EdibleBuffs.Attack}/{this.EdibleBuffs.Duration}");
-                return sb.ToString();
+                return StringBuilderCache.GetStringAndRelease(sb);
             }
             else
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using JsonAssets.Framework.Internal;
 using SpaceShared;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -31,7 +32,7 @@ namespace JsonAssets.Framework
 
         internal static Dictionary<string, HashSet<string>[]> GenerateGiftTastes()
         {
-            Log.Trace("Generating gift taste dictionary");
+            Log.Trace("Generating gift taste dictionary.");
             Dictionary<string, HashSet<string>[]> friendship = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (Data.ObjectData obj in Mod.instance.Objects)
@@ -83,7 +84,7 @@ namespace JsonAssets.Framework
             if (Mod.instance.DidInit && e.NameWithoutLocale.IsEquivalentTo(GIFTTASTES))
             {
                 e.Edit(
-                    (asset) =>
+                    static (asset) =>
                     {
                         var data = asset.AsDictionary<string, string>().Data;
                         foreach (var (key, tastes) in Gifts.Value)
@@ -129,7 +130,10 @@ namespace JsonAssets.Framework
                                 HashSet<string> dislikes = new(tastes[(int)GiftTasteIndex.Dislike]);
                                 HashSet<string> hates = new(tastes[(int)GiftTasteIndex.Hate]);
 
-                                List<string> tastearray = new(oldTastes.Split('/'));
+                                string[] tastearray = oldTastes.Split('/');
+
+                                if (tastearray.Length < 10)
+                                    Log.Warn($"NPC {key} seems to have a malformed gift taste string. This may cause issues.");
 
                                 int loveindex = ((int)GiftTasteIndex.Love) * 2 + 1;
                                 int likeindex = ((int)GiftTasteIndex.Like) * 2 + 1;
@@ -137,46 +141,46 @@ namespace JsonAssets.Framework
                                 int hateindex = ((int)GiftTasteIndex.Hate) * 2 + 1;
                                 int neutralindex = ((int)GiftTasteIndex.Neutral) * 2 + 1;
 
-                                if (tastearray.Count > loveindex)
+                                if (tastearray.Length > loveindex)
                                     loves.UnionWith(tastearray[loveindex].Split(' '));
-                                if (tastearray.Count > likeindex)
+                                if (tastearray.Length > likeindex)
                                     likes.UnionWith(tastearray[likeindex].Split(' '));
-                                if (tastearray.Count > dislikeindex)
+                                if (tastearray.Length > dislikeindex)
                                     dislikes.UnionWith(tastearray[dislikeindex].Split(' '));
-                                if (tastearray.Count > hateindex)
+                                if (tastearray.Length > hateindex)
                                     hates.UnionWith(tastearray[hateindex].Split(' '));
-                                if (tastearray.Count > neutralindex)
+                                if (tastearray.Length > neutralindex)
                                     neutrals.UnionWith(tastearray[neutralindex].Split(' '));
 
                                 // string interpolation for some stupid reason sucks if you give it more than four
                                 // inputs in NET 5.0
-                                StringBuilder sb = new(128);
-                                if (tastearray.Count > 0)
+                                StringBuilder sb = StringBuilderCache.Acquire();
+                                if (tastearray.Length > 0)
                                     sb.Append(tastearray[0]);
                                 sb.Append('/');
                                 sb.AppendJoin(' ', loves);
                                 sb.Append('/');
-                                if (tastearray.Count > 2)
+                                if (tastearray.Length > 2)
                                     sb.Append(tastearray[2]);
                                 sb.Append('/');
                                 sb.AppendJoin(' ', likes);
                                 sb.Append('/');
-                                if (tastearray.Count > 4)
+                                if (tastearray.Length > 4)
                                     sb.Append(tastearray[4]);
                                 sb.Append('/');
                                 sb.AppendJoin(' ', dislikes);
                                 sb.Append('/');
-                                if (tastearray.Count > 6)
+                                if (tastearray.Length > 6)
                                     sb.Append(tastearray[6]);
                                 sb.Append('/');
                                 sb.AppendJoin(' ', hates);
                                 sb.Append('/');
-                                if (tastearray.Count > 8)
+                                if (tastearray.Length > 8)
                                     sb.Append(tastearray[8]);
                                 sb.Append('/');
                                 sb.AppendJoin(' ', neutrals);
 
-                                data[key] = sb.ToString();
+                                data[key] = StringBuilderCache.GetStringAndRelease(sb);
                             }
                         }
                     },

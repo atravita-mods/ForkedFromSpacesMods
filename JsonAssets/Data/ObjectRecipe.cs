@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
 using StardewValley;
 
 namespace JsonAssets.Data
@@ -28,28 +29,32 @@ namespace JsonAssets.Data
         /*********
         ** Public methods
         *********/
-        internal StringBuilder GetRecipeString(ObjectData parent)
+        internal string GetRecipeString(ObjectData parent)
         {
-            //string str = "";
-            StringBuilder str = new();
+            StringBuilder str = StringBuilderCache.Acquire();
             foreach (var ingredient in this.Ingredients)
             {
                 int id = Mod.instance.ResolveObjectId(ingredient.Object);
                 if (id == 0)
                     continue;
-                str.Append(id + " " + ingredient.Count + " ");
+                str.Append(id).Append(' ').Append(ingredient.Count).Append(' ');
             }
-            str.Remove(str.Length - 1, 1);
+
+            str.Remove(str.Length - 1, 1); // remove excess space at the end.
             str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/");
+
             if (parent.Category != ObjectCategory.Cooking)
                 str.Append("false/");
+
             if (this.SkillUnlockName?.Length > 0 && this.SkillUnlockLevel > 0)
-                str.Append("/" + this.SkillUnlockName + " " + this.SkillUnlockLevel);
+                str.Append('/').Append(this.SkillUnlockName).Append(' ').Append(this.SkillUnlockLevel);
             else
                 str.Append("/null");
+
             if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
-                str.Append("/" + parent.LocalizedName());
-            return str;
+                str.Append('/').Append(parent.LocalizedName());
+
+            return StringBuilderCache.GetStringAndRelease(str);
         }
 
 

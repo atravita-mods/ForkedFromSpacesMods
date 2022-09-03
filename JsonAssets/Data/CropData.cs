@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
@@ -64,26 +65,28 @@ namespace JsonAssets.Data
             return this.Id;
         }
 
-        internal StringBuilder GetCropInformation()
+        internal string GetCropInformation()
         {
-            StringBuilder str = new();
+            StringBuilder str = StringBuilderCache.Acquire();
             //str += GetProductId() + "/";
             str.AppendJoin(' ', this.Phases).Append('/')
                .AppendJoin(' ', this.Seasons).Append('/')
                .Append($"{this.GetCropSpriteIndex()}/{Mod.instance.ResolveObjectId(this.Product)}/{this.RegrowthPhase}/")
                .Append(this.HarvestWithScythe ? "1" : "0").Append('/');
+
             if (this.Bonus != null)
                 str.Append($"true {this.Bonus.MinimumPerHarvest} {this.Bonus.MaximumPerHarvest} {this.Bonus.MaxIncreasePerFarmLevel} {this.Bonus.ExtraChance}/");
             else
                 str.Append("false/");
+
             str.Append((this.TrellisCrop ? "true" : "false")).Append('/');
+
             if (this.Colors.Any())
-            {
                 str.Append("true ").AppendJoin(' ', this.Colors.Select(color=>$"{color.R} {color.G} {color.B}"));
-            }
             else
                 str.Append("false");
-            return str;
+
+            return StringBuilderCache.GetStringAndRelease(str);
         }
 
         /*********

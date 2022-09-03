@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using JsonAssets.Data;
 using Microsoft.Xna.Framework;
 using SpaceCore;
@@ -174,7 +175,7 @@ namespace JsonAssets.Framework
             {
                 try
                 {
-                    string cropinfo = crop.GetCropInformation().ToString();
+                    string cropinfo = crop.GetCropInformation();
                     if (Log.IsVerbose)
                         Log.Trace($"Injecting to crops: {crop.GetSeedId()}: {cropinfo}");
                     if (!data.TryAdd(crop.GetSeedId(), cropinfo))
@@ -214,7 +215,7 @@ namespace JsonAssets.Framework
                 {
                     if (obj.Recipe == null || obj.Category != ObjectCategory.Cooking)
                         continue;
-                    string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
+                    string recipestring = obj.Recipe.GetRecipeString(obj);
                     if (Log.IsVerbose)
                         Log.Trace($"Injecting to cooking recipes: {obj.Name}: {recipestring}");
                     if (!data.TryAdd(obj.Name, recipestring))
@@ -235,7 +236,7 @@ namespace JsonAssets.Framework
                 {
                     if (obj.Recipe == null || obj.Category == ObjectCategory.Cooking)
                         continue;
-                    string recipestring = obj.Recipe.GetRecipeString(obj).ToString();
+                    string recipestring = obj.Recipe.GetRecipeString(obj);
                     if (Log.IsVerbose)
                         Log.Trace( $"Injecting to crafting recipes: {obj.Name}: {recipestring}");
                     if (!data.TryAdd(obj.Name, recipestring))
@@ -252,7 +253,7 @@ namespace JsonAssets.Framework
                 {
                     if (big.Recipe == null)
                         continue;
-                    string recipestring = big.Recipe.GetRecipeString(big).ToString();
+                    string recipestring = big.Recipe.GetRecipeString(big);
                     if (Log.IsVerbose)
                         Log.Trace($"Injecting to crafting recipes: {big.Name}: {recipestring}");
                     if (!data.TryAdd(big.Name, recipestring))
@@ -1245,7 +1246,7 @@ namespace JsonAssets.Framework
         }
         #endregion
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private static RawDataRented GetScratchBuffer(
             SortedList<int, RawDataRented> scratch,
             int index,
@@ -1264,55 +1265,75 @@ namespace JsonAssets.Framework
             return rented;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static string GetTilesheetName(this string assetName, int ts)
             => ts == 0 ? assetName : $"{assetName}{ts + 1}";
 
         #region rectangles
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle ObjectRect(int index)
         {
             int div = Math.DivRem(index, 24, out int rem);
             return new(rem * 16, div * 16, 16, 16);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle CropRect(int index)
         {
             int div = Math.DivRem(index, 2, out int rem);
             return new(rem * 128, div * 32, 128, 32);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle FruitTreeRect(int index)
         {
             return new(0, index * 80, 432, 80);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle BigCraftableRect(int index)
         {
             int div = Math.DivRem(index, 8, out int rem);
             return new(rem * 16, div * 32, 16, 32);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle HatRect(int index)
         {
             int div = Math.DivRem(index, 12, out int rem);
             return new(rem * 20, div * 80, 20, 80);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle WeaponRect(int index)
         {
             int div = Math.DivRem(index, 8, out int rem);
             return new(rem * 16, div * 16, 16, 16);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle ShirtRectPlain(int index)
         {
-            int div = Math.DivRem(index, 8, out int rem);
+            int div = Math.DivRem(index, 16, out int rem);
             return new(rem * 8, div * 32, 8, 32);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle ShirtRectDye(int index)
         {
             var rect = ContentInjector1.ShirtRectPlain(index);
             rect.X += 16 * 8;
             return rect;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle PantsRect(int index)
         {
             int div = Math.DivRem(index, 10, out int rem);
             return new(rem * 192, div * 688, 192, 688);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Rectangle BootsRect(int index)
         {
             return new(0, index, 4, 1);

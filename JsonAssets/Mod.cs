@@ -225,6 +225,7 @@ namespace JsonAssets
         }
 
         #region loading
+
         private bool FirstTick = true;
         private void OnTick(object sender, UpdateTickedEventArgs e)
         {
@@ -1492,6 +1493,8 @@ namespace JsonAssets
             }
         }
 
+        #region shops
+
         [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = DiagnosticMessages.IsPublicApi)]
         [SuppressMessage("ReSharper", "InconsistentNaming", Justification = DiagnosticMessages.IsPublicApi)]
         public List<ShopDataEntry> shopData = new();
@@ -1586,6 +1589,8 @@ namespace JsonAssets
             return new HashSet<string>(GetAll(), StringComparer.OrdinalIgnoreCase);
         }
 
+        #endregion
+
         internal bool DidInit;
         private void InitStuff(bool loadIdFiles)
         {
@@ -1614,7 +1619,6 @@ namespace JsonAssets
                 this.OldHatIds = LoadDictionary<string, int>("ids-hats.json") ?? new Dictionary<string, int>();
                 this.OldWeaponIds = LoadDictionary<string, int>("ids-weapons.json") ?? new Dictionary<string, int>();
                 this.OldClothingIds = LoadDictionary<string, int>("ids-clothing.json") ?? new Dictionary<string, int>();
-                //this.OldBootsIds = LoadDictionary<string, int>("ids-boots.json") ?? new Dictionary<string, int>();
 
                 if (this.Monitor.IsVerbose)
                 {
@@ -1633,8 +1637,6 @@ namespace JsonAssets
                         Log.Trace("\tWeapon " + id.Key + " = " + id.Value);
                     foreach (var id in this.OldClothingIds)
                         Log.Trace("\tClothing " + id.Key + " = " + id.Value);
-                    //foreach (var id in this.OldBootsIds)
-                    //    Log.Verbose("\tBoots " + id.Key + " = " + id.Value);
                     Log.Trace("OLD IDS END");
                 }
             }
@@ -2002,6 +2004,8 @@ namespace JsonAssets
                 obj.Id = -1;
             }
         }
+
+        #region deshuffle
 
         /// <summary>Get the vanilla IDs from the game data.</summary>
         /// <param name="full">The full list of items, including both vanilla and custom IDs.</param>
@@ -3188,5 +3192,7 @@ namespace JsonAssets
                     return false;
             }
         }
+
+        #endregion
     }
 }

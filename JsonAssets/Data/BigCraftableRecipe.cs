@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
 using StardewValley;
 
 namespace JsonAssets.Data
@@ -28,9 +29,9 @@ namespace JsonAssets.Data
         /*********
         ** Public methods
         *********/
-        internal StringBuilder GetRecipeString(BigCraftableData parent)
+        internal string GetRecipeString(BigCraftableData parent)
         {
-            StringBuilder str = new();
+            StringBuilder str = StringBuilderCache.Acquire();
             foreach (var ingredient in this.Ingredients)
             {
                 int id = Mod.instance.ResolveObjectId(ingredient.Object);
@@ -46,7 +47,7 @@ namespace JsonAssets.Data
                 str.Append("null");
             if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
                 str.Append("/" + parent.LocalizedName());
-            return str;
+            return StringBuilderCache.GetStringAndRelease(str);
         }
 
 
