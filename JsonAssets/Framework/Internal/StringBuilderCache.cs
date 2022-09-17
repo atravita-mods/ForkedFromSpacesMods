@@ -1,5 +1,5 @@
 /* The following file was copied from https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Text/StringBuilderCache.cs
- * and is licensed MIT to the .NET foundation.*/
+ * and is licensed MIT by the .NET foundation.*/
 
 using System;
 using System.Text;

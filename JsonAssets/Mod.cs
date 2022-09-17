@@ -2995,7 +2995,10 @@ namespace JsonAssets
                         if (this.OldObjectIds.TryGetValue(item.Key, out int oldindex))
                         {
                             if (oldindex != item.Value)
+                            {
+                                toRemove.Add(key);
                                 toAddOrUpdate.Add(oldindex, val);
+                            }
                         }
                         else
                         {
@@ -3011,7 +3014,10 @@ namespace JsonAssets
                         if (this.ObjectIds.TryGetValue(item.Key, out int newindex))
                         {
                             if (newindex != item.Value)
+                            {
+                                toRemove.Add(key);
                                 toAddOrUpdate.Add(newindex, val);
+                            }
                         }
                         else
                         {
