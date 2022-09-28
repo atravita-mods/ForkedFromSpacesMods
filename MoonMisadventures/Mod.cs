@@ -406,7 +406,7 @@ namespace MoonMisadventures
                 foreach ( int key in Game1.objectInformation.Keys )
                 {
                     var obj = new StardewValley.Object(key, 1);
-                    if ( !obj.canBeGivenAsGift() || obj.questItem || obj.ParentSheetIndex == 809 )
+                    if ( !obj.canBeGivenAsGift() || obj.questItem.Value || obj.ParentSheetIndex == 809 )
                         continue;
                     if ( !farmer.giftedItems[ e.Npc.Name ].ContainsKey( key ) && ( !( obj.Name == "Stone" ) || key == 390 ) )
                         farmer.giftedItems[ e.Npc.Name ].Add( key, 0 );

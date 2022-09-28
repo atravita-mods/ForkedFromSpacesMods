@@ -177,7 +177,7 @@ namespace MoonMisadventures.Patches
         {
             if ( __state != null )
             {
-                __instance.upgradeLevel.Value = ( int ) __state;
+                __instance.UpgradeLevel = ( int ) __state;
             }
         }
     }
@@ -197,7 +197,7 @@ namespace MoonMisadventures.Patches
             {
                 __state = new ToolTextureState() { upgrade = __instance.UpgradeLevel, oldSpritesheet = Game1.toolSpriteSheet };
                 Mod.instance.Helper.Reflection.GetField<Texture2D>( typeof( Game1 ), "_toolSpriteSheet" ).SetValue( __instance.UpgradeLevel == 5 ? Assets.RadioactiveTools : Assets.MythiciteTools );
-                __instance.upgradeLevel.Value = 4;
+                __instance.UpgradeLevel = 4;
             }
         }
 
@@ -206,7 +206,7 @@ namespace MoonMisadventures.Patches
             if ( __state != null )
             {
                 Mod.instance.Helper.Reflection.GetField<Texture2D>( typeof( Game1 ), "_toolSpriteSheet" ).SetValue( ( __state as ToolTextureState ).oldSpritesheet );
-                __instance.upgradeLevel.Value = ( __state as ToolTextureState ).upgrade;
+                __instance.UpgradeLevel = ( __state as ToolTextureState ).upgrade;
             }
         }
     }
@@ -214,24 +214,24 @@ namespace MoonMisadventures.Patches
     [HarmonyPatch( typeof( Game1 ), nameof( Game1.drawTool ), new Type[] { typeof( Farmer ), typeof( int ) } )]
     public static class Game1DrawToolPatch
     {
-        public static void Prefix( Farmer f, ref object __state )
+        private static void Prefix( Farmer f, ref ToolTextureState __state )
         {
             var tool = f.CurrentTool;
             if ( tool.UpgradeLevel >= 5 )
             {
                 __state = new ToolTextureState() { upgrade = tool.UpgradeLevel, oldSpritesheet = Game1.toolSpriteSheet };
                 Mod.instance.Helper.Reflection.GetField<Texture2D>( typeof( Game1 ), "_toolSpriteSheet" ).SetValue( tool.UpgradeLevel == 5 ? Assets.RadioactiveTools : Assets.MythiciteTools );
-                tool.upgradeLevel.Value = 4;
+                tool.UpgradeLevel = 4;
             }
         }
 
-        public static void Postfix( Farmer f, ref object __state )
+        private static void Postfix( Farmer f, ref ToolTextureState __state )
         {
             var tool = f.CurrentTool;
             if ( __state != null )
             {
                 Mod.instance.Helper.Reflection.GetField<Texture2D>( typeof( Game1 ), "_toolSpriteSheet" ).SetValue( ( __state as ToolTextureState ).oldSpritesheet );
-                tool.upgradeLevel.Value = ( __state as ToolTextureState ).upgrade;
+                tool.UpgradeLevel =  __state .upgrade;
             }
         }
     }

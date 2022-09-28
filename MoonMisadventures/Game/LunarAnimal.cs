@@ -130,14 +130,14 @@ namespace MoonMisadventures.Game
             this.daysSinceLastLay.Value++;
             if ( !this.wasPet.Value && !this.wasAutoPet.Value )
             {
-                this.friendshipTowardFarmer.Value = Math.Max( 0, ( int ) this.friendshipTowardFarmer - ( 10 - ( int ) this.friendshipTowardFarmer / 200 ) );
+                this.friendshipTowardFarmer.Value = Math.Max( 0, this.friendshipTowardFarmer.Value - ( 10 - this.friendshipTowardFarmer.Value / 200 ) );
                 this.happiness.Value = ( byte ) Math.Max( 0, this.happiness.Value - this.happinessDrain.Value * 5 );
             }
             this.wasPet.Value = false;
             this.wasAutoPet.Value = false;
             this.daysOwned.Value++;
             Random r = new Random((int)this.myID.Value / 2 + (int)Game1.stats.DaysPlayed);
-            if ( this.fullness.Value > 200 || r.NextDouble() < ( double ) ( this.fullness.Value - 30 ) / 170.0 )
+            if ( this.fullness.Value > 200 || r.NextDouble() < (this.fullness.Value - 30) / 170.0 )
             {
                 this.age.Value++;
                 this.happiness.Value = ( byte ) Math.Min( 255, this.happiness.Value + this.happinessDrain.Value * 2 );
@@ -147,7 +147,7 @@ namespace MoonMisadventures.Game
                 this.happiness.Value = ( byte ) Math.Max( 0, this.happiness.Value - 100 );
                 this.friendshipTowardFarmer.Value = Math.Max( 0, this.friendshipTowardFarmer.Value - 20 );
             }
-            bool produceToday = this.daysSinceLastLay.Value >= this.daysToLay.Value - ((this.type.Value.Equals("Sheep") && Game1.getFarmer(this.ownerID).professions.Contains(3)) ? 1 : 0) && r.NextDouble() < (double)(int)this.fullness.Value / 200.0 && r.NextDouble() < (double)(int)this.happiness.Value / 70.0;
+            bool produceToday = this.daysSinceLastLay.Value >= this.daysToLay.Value - ((this.type.Value.Equals("Sheep") && Game1.getFarmer(this.ownerID.Value).professions.Contains(3)) ? 1 : 0) && r.NextDouble() < (double)(int)this.fullness.Value / 200.0 && r.NextDouble() < (double)(int)this.happiness.Value / 70.0;
             int whichProduce;
             if ( !produceToday || this.age.Value < this.ageWhenMature.Value )
             {
@@ -158,11 +158,10 @@ namespace MoonMisadventures.Game
                 whichProduce = this.defaultProduceIndex.Value;
                 if (r.NextDouble() < this.happiness.Value / 150.0 )
                 {
-                    float happinessModifier = ((this.happiness.Value > 200) ? ((float)(int)this.happiness.Value * 1.5f) : ((float)((this.happiness.Value <= 100) ? (this.happiness.Value - 100) : 0)));
                     this.daysSinceLastLay.Value = 0;
                     Game1.stats.ChickenEggsLayed++;
                     double chanceForQuality = this.friendshipTowardFarmer.Value / 1000f - (1f - this.happiness.Value / 225f);
-                    if ( ( !this.isCoopDweller() && Game1.getFarmer( this.ownerID ).professions.Contains( 3 ) ) || ( this.isCoopDweller() && Game1.getFarmer( this.ownerID ).professions.Contains( 2 ) ) )
+                    if ( ( !this.isCoopDweller() && Game1.getFarmer( this.ownerID.Value ).professions.Contains( 3 ) ) || ( this.isCoopDweller() && Game1.getFarmer( this.ownerID.Value ).professions.Contains( 2 ) ) )
                     {
                         chanceForQuality += 0.33;
                     }

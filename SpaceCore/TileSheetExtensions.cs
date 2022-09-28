@@ -121,6 +121,7 @@ namespace SpaceCore
                 : data.Extensions[index - 1];
         }
 
+#nullable enable
         /// <summary>
         /// Attempts to get the relevant extended tilesheet for a given assetname.
         /// </summary>
@@ -134,6 +135,8 @@ namespace SpaceCore
 
             return GetTileSheet(extData.BaseTileSheet, index);
         }
+
+#nullable restore
 
         [DebuggerDisplay("ts = {TileSheet}, y = {Y}")]
         public readonly struct AdjustedTarget

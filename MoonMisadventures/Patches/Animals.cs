@@ -37,25 +37,25 @@ namespace MoonMisadventures.Patches
             {
                 ___animal = Utility.GetBestHarvestableFarmAnimal( aloc.Animals.Values, __instance, r );
             }
-            if ( ___animal != null && ___animal.currentProduce.Value > 0 && ( int ) ___animal.age >= ( byte ) ___animal.ageWhenMature && ___animal.toolUsedForHarvest.Equals( __instance.BaseName ) && who.couldInventoryAcceptThisObject( ___animal.currentProduce, 1 ) )
+            if ( ___animal != null && ___animal.currentProduce.Value > 0 && ___animal.age.Value >= ___animal.ageWhenMature.Value && ___animal.toolUsedForHarvest.Equals( __instance.BaseName ) && who.couldInventoryAcceptThisObject( ___animal.currentProduce.Value, 1 ) )
             {
                 ___animal.doEmote( 20 );
-                ___animal.friendshipTowardFarmer.Value = Math.Min( 1000, ( int ) ___animal.friendshipTowardFarmer + 5 );
+                ___animal.friendshipTowardFarmer.Value = Math.Min( 1000, ___animal.friendshipTowardFarmer.Value + 5 );
                 who.currentLocation.localSound( "Milking" );
                 ___animal.pauseTimer = 1500;
             }
-            else if ( ___animal != null && ( int ) ___animal.currentProduce > 0 && ___animal.age.Value >= ___animal.ageWhenMature.Value)
+            else if ( ___animal != null && ___animal.currentProduce.Value > 0 && ___animal.age.Value >= ___animal.ageWhenMature.Value)
             {
                 if ( who != null && Game1.player.Equals( who ) )
                 {
                     if ( !___animal.toolUsedForHarvest.Equals( __instance.BaseName ) )
                     {
-                        if ( !( ___animal.toolUsedForHarvest.Value is null ) && !___animal.toolUsedForHarvest.Equals( "null" ) )
+                        if ( ___animal.toolUsedForHarvest.Value is not null  && !___animal.toolUsedForHarvest.Equals( "null" ) )
                         {
-                            Game1.showRedMessage( Game1.content.LoadString( "Strings\\StringsFromCSFiles:MilkPail.cs.14167", ___animal.toolUsedForHarvest ) );
+                            Game1.showRedMessage( Game1.content.LoadString( "Strings\\StringsFromCSFiles:MilkPail.cs.14167", ___animal.toolUsedForHarvest.Value ) );
                         }
                     }
-                    else if ( !who.couldInventoryAcceptThisObject( ___animal.currentProduce, 1 ) )
+                    else if ( !who.couldInventoryAcceptThisObject( ___animal.currentProduce.Value, 1 ) )
                     {
                         Game1.showRedMessage( Game1.content.LoadString( "Strings\\StringsFromCSFiles:Crop.cs.588" ) );
                     }
@@ -74,7 +74,7 @@ namespace MoonMisadventures.Patches
                 {
                     toSay = Game1.content.LoadString( "Strings\\StringsFromCSFiles:MilkPail.cs.14176", ___animal.displayName );
                 }
-                if ( ___animal != null && ( int ) ___animal.age >= ( byte ) ___animal.ageWhenMature && ___animal.toolUsedForHarvest.Equals( __instance.BaseName ) )
+                if ( ___animal != null && ___animal.age.Value >= ___animal.ageWhenMature.Value && ___animal.toolUsedForHarvest.Equals( __instance.BaseName ) )
                 {
                     toSay = Game1.content.LoadString( "Strings\\StringsFromCSFiles:MilkPail.cs.14177", ___animal.displayName );
                 }
@@ -105,12 +105,12 @@ namespace MoonMisadventures.Patches
                 who.Stamina -= 4f;
                 __instance.CurrentParentTileIndex = 6;
                 __instance.IndexOfMenuItemView = 6;
-                if ( ___animal != null && ( int ) ___animal.currentProduce > 0 && ( int ) ___animal.age >= ( byte ) ___animal.ageWhenMature && ___animal.toolUsedForHarvest.Equals( __instance.BaseName ) && who.addItemToInventoryBool( new CustomObject( DynamicGameAssets.Mod.Find( ItemIds.GalaxyMilk ) as ObjectPackData )
+                if ( ___animal != null && ___animal.currentProduce.Value > 0 && ___animal.age.Value >= ___animal.ageWhenMature.Value && ___animal.toolUsedForHarvest.Equals( __instance.BaseName ) && who.addItemToInventoryBool( new CustomObject( DynamicGameAssets.Mod.Find( ItemIds.GalaxyMilk ) as ObjectPackData )
                 {
-                    Quality = ___animal.produceQuality
+                    Quality = ___animal.produceQuality.Value
                 } ) )
                 {
-                    Utility.RecordAnimalProduce( ___animal, ___animal.currentProduce );
+                    Utility.RecordAnimalProduce( ___animal, ___animal.currentProduce.Value );
                     Game1.playSound( "coin" );
                     ___animal.currentProduce.Value = -1;
                     who.gainExperience( 0, 5 );
@@ -127,16 +127,16 @@ namespace MoonMisadventures.Patches
             ___lastUser = who;
             Game1.recentMultiplayerRandom = new Random( ( short ) Game1.random.Next( -32768, 32768 ) );
             ToolFactory.getIndexFromTool( __instance );
-            if ( __instance.isHeavyHitter() && !( __instance is MeleeWeapon ) )
+            if ( __instance.isHeavyHitter() && __instance is not MeleeWeapon  )
             {
                 Rumble.rumble( 0.1f + ( float ) ( Game1.random.NextDouble() / 4.0 ), 100 + Game1.random.Next( 50 ) );
-                location.damageMonster( new Rectangle( x - 32, y - 32, 64, 64 ), ( int ) __instance.upgradeLevel + 1, ( ( int ) __instance.upgradeLevel + 1 ) * 3, isBomb: false, who );
+                location.damageMonster( new Rectangle( x - 32, y - 32, 64, 64 ), __instance.UpgradeLevel + 1, ( __instance.UpgradeLevel + 1 ) * 3, isBomb: false, who );
             }
-            if ( __instance is MeleeWeapon && ( !who.UsingTool || Game1.mouseClickPolling >= 50 || ( int ) ( __instance as MeleeWeapon ).type == 1 || ( __instance as MeleeWeapon ).InitialParentTileIndex == 47 || MeleeWeapon.timedHitTimer > 0 || who.FarmerSprite.currentAnimationIndex != 5 || !( who.FarmerSprite.timer < who.FarmerSprite.interval / 4f ) ) )
+            if ( __instance is MeleeWeapon weapon && ( !who.UsingTool || Game1.mouseClickPolling >= 50 || weapon.type.Value == 1 || weapon.InitialParentTileIndex == 47 || MeleeWeapon.timedHitTimer > 0 || who.FarmerSprite.currentAnimationIndex != 5 || !( who.FarmerSprite.timer < who.FarmerSprite.interval / 4f ) ) )
             {
-                if ( ( int ) ( __instance as MeleeWeapon ).type == 2 && ( __instance as MeleeWeapon ).isOnSpecial )
+                if (weapon.type.Value == 2 && weapon.isOnSpecial )
                 {
-                    ( __instance as MeleeWeapon ).triggerClubFunction( who );
+                    weapon.triggerClubFunction( who );
                 }
                 else if ( who.FarmerSprite.currentAnimationIndex > 0 )
                 {
