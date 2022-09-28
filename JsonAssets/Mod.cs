@@ -1851,7 +1851,7 @@ namespace JsonAssets
             // favor spans for now, but maybe building a lookup dictionary in the opposite direction would be
             // more performant.
             var dataSpan = datastring.AsSpan().Trim();
-            foreach (var (key, value) in Game1.objectInformation)
+            foreach (var (key, value) in Game1.objectInformation ??= Game1.content.Load<Dictionary<int, string>>("Data\\ObjectInformation"))
             {
                 if (value is not null && dataSpan.Equals(JAUtils.GetNameFrom(value), StringComparison.OrdinalIgnoreCase))
                     return key;
@@ -1876,7 +1876,7 @@ namespace JsonAssets
                 return id;
 
             var dataSpan = datastring.AsSpan().Trim();
-            foreach (var obj in Game1.clothingInformation)
+            foreach (var obj in Game1.clothingInformation ??= Game1.content.Load<Dictionary<int, string>>("Data\\ClothingInformation"))
             {
                 if (dataSpan.Equals(JAUtils.GetNameFrom(obj.Value), StringComparison.OrdinalIgnoreCase))
                     return obj.Key;
