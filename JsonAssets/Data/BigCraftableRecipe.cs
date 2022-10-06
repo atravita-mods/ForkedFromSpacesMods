@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
@@ -39,6 +40,10 @@ namespace JsonAssets.Data
                     continue;
                 str.Append(id + " " + ingredient.Count + " ");
             }
+
+            if (str.Length == 0)
+                throw new InvalidDataException("No valid ingredients could be found, skipping this recipe.");
+
             str.Remove(str.Length-1, 1);
             str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/true/");
             if (this.SkillUnlockName?.Length > 0 && this.SkillUnlockLevel > 0)

@@ -1959,7 +1959,7 @@ namespace JsonAssets
                 // else assign new ID
                 else
                 {
-                    Log.Verbose($"New ID: {d.Name} = {currId}");
+                    Log.Verbose(() => $"New ID: {d.Name} = {currId}");
                     int id = currId++;
                     if (bigSkip.Length != 0)
                     {
@@ -1972,6 +1972,7 @@ namespace JsonAssets
                     ids.Add(d.Name, id);
                     if (type == "objects" && d is ObjectData { IsColored: true })
                         currId++;
+                    // uh I hope this doesn't interact badly with bigSkip.
                     else if (type == "big-craftables" && ((BigCraftableData)d).ReserveExtraIndexCount > 0)
                         currId += ((BigCraftableData)d).ReserveExtraIndexCount;
                     d.Id = ids[d.Name];
@@ -1995,7 +1996,7 @@ namespace JsonAssets
             int currIdx = starting;
             foreach (var d in data)
             {
-                Log.Verbose($"New texture index: {d.Name} = {currIdx}");
+                Log.Verbose(() => $"New texture index: {d.Name} = {currIdx}");
                 idxs.Add(d.Name, currIdx++);
                 if (type == "shirts" && ((ClothingData)d).HasFemaleVariant)
                     currIdx++;

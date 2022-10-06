@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
@@ -39,6 +40,9 @@ namespace JsonAssets.Data
                     continue;
                 str.Append(id).Append(' ').Append(ingredient.Count).Append(' ');
             }
+
+            if (str.Length == 0)
+                throw new InvalidDataException("No valid ingredients could be found, skipping this recipe.");
 
             str.Remove(str.Length - 1, 1); // remove excess space at the end.
             str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/");
