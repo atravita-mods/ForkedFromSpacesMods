@@ -38,7 +38,7 @@ namespace JsonAssets.Data
                 int id = Mod.instance.ResolveObjectId(ingredient.Object);
                 if (id == 0)
                     continue;
-                str.Append(id + " " + ingredient.Count + " ");
+                str.Append(id).Append(' ').Append(ingredient.Count).Append(' ');
             }
 
             if (str.Length == 0)
@@ -47,11 +47,11 @@ namespace JsonAssets.Data
             str.Remove(str.Length-1, 1);
             str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/true/");
             if (this.SkillUnlockName?.Length > 0 && this.SkillUnlockLevel > 0)
-                str.Append(this.SkillUnlockName + " " + this.SkillUnlockLevel);
+                str.Append(this.SkillUnlockName).Append(' ').Append(this.SkillUnlockLevel);
             else
                 str.Append("null");
             if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
-                str.Append("/" + parent.LocalizedName());
+                str.Append('/').Append(parent.LocalizedName());
             return StringBuilderCache.GetStringAndRelease(str);
         }
 
