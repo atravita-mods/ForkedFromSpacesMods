@@ -947,6 +947,8 @@ namespace JsonAssets.Framework
             int size = tex.Data.Width * TileSheetExtensions.MAXTILESHEETHEIGHT;
             Color[] initial = ArrayPool<Color>.Shared.Rent(size);
 
+            Array.Clear(initial, 0, size);
+
             Rectangle startPos = ContentInjector1.ShirtRectPlain(Mod.StartingShirtTextureIndex);
 
             SortedList<int, RawDataRented> scratch = new();
@@ -982,7 +984,7 @@ namespace JsonAssets.Framework
 
                     Rectangle patchLoc = new(rect.X, target.Y, rect.Width, rect.Height);
 
-                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
+                    RawDataRented rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width, true);
 
                     rented.PatchImage(shirt.TextureMale, null, patchLoc);
 
@@ -1001,7 +1003,7 @@ namespace JsonAssets.Framework
 
                             // remainder of logic can refer to the new ts.
                             ts = extraTS;
-                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
+                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width, true);
                         }
 
                         patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
@@ -1021,7 +1023,7 @@ namespace JsonAssets.Framework
 
                             // remainder of logic can refer to the new ts.
                             ts = extraTS;
-                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
+                            rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width, true);
                         }
 
                         patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
@@ -1041,7 +1043,7 @@ namespace JsonAssets.Framework
 
                                 // remainder of logic can refer to the new ts.
                                 ts = extraTS;
-                                rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width);
+                                rented = GetScratchBuffer(scratch, ts, asset.NameWithoutLocale.BaseName, size, tex.Data.Width, true);
                             }
 
                             patchLoc = new(extraRect.X, extraTarget.Y, extraRect.Width, extraRect.Height);
@@ -1252,12 +1254,15 @@ namespace JsonAssets.Framework
             int index,
             string assetName,
             int minsize,
-            int width)
+            int width,
+            bool clearOnBorrow = false)
         {
             if (!scratch.TryGetValue(index, out var rented))
             {
                 var texture = TileSheetExtensions.GetTileSheet(assetName, index);
                 var array = ArrayPool<Color>.Shared.Rent(minsize);
+                if (clearOnBorrow)
+                    Array.Clear(array, 0, minsize);
                 texture?.GetData(array, 0, minsize);
                 rented = new(array, width, TileSheetExtensions.MAXTILESHEETHEIGHT);
                 scratch[index] = rented;
