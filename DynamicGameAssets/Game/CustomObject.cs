@@ -210,8 +210,8 @@ namespace DynamicGameAssets.Game
             {
                 return;
             }
-            int x = (int)this.tileLocation.X;
-            int y = (int)this.tileLocation.Y;
+            int x = (int)this.TileLocation.X;
+            int y = (int)this.TileLocation.Y;
 
             b.Draw(Game1.shadowTexture, this.getLocalPosition(Game1.viewport) + new Vector2(32f, 53f), Game1.shadowTexture.Bounds, Color.White, 0f, new Vector2(Game1.shadowTexture.Bounds.Center.X, Game1.shadowTexture.Bounds.Center.Y), 4f, SpriteEffects.None, (float)this.getBoundingBox(new Vector2(x, y)).Bottom / 15000f);
             var tex = this.Data.pack.GetTexture(this.Data.Texture, 16, 16);
@@ -491,9 +491,9 @@ namespace DynamicGameAssets.Game
             if (this.Data.UpgradedSprinklerTiles != null && this.heldObject.Value != null && Utility.IsNormalObjectAtParentSheetIndex(this.heldObject.Value, 915))
                 tiles = this.Data.UpgradedSprinklerTiles;
 
-            var ret = new List<Vector2>();
+            var ret = new List<Vector2>(tiles.Count);
             foreach (var tile in tiles)
-                ret.Add(this.tileLocation.Value + tile);
+                ret.Add(this.TileLocation + tile);
 
             return ret;
         }
