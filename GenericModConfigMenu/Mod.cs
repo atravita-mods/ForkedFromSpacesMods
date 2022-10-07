@@ -149,11 +149,17 @@ namespace GenericModConfigMenu
             if (Game1.activeClickableMenu is not TitleMenu titleMenu || TitleMenu.subMenu != null)
                 return false;
 
+            bool interactable = false;
+
             var method = this.Helper.Reflection.GetMethod(titleMenu, "ShouldAllowInteraction", false);
             if (method != null)
-                return method.Invoke<bool>();
+                interactable =  method.Invoke<bool>();
             else // method isn't available on Android
-                return this.Helper.Reflection.GetField<bool>(titleMenu, "titleInPosition").GetValue();
+                interactable = this.Helper.Reflection.GetField<bool>(titleMenu, "titleInPosition").GetValue();
+
+            if (!interactable)
+                return false;
+            return this.Helper.Reflection.GetField<int>(titleMenu, "showButtonsTimer").GetValue() <= 0;
         }
 
         /// <inheritdoc cref="IGameLoopEvents.GameLaunched"/>
