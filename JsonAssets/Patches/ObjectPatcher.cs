@@ -144,7 +144,7 @@ namespace JsonAssets.Patches
         {
             try
             {
-                if (!__instance.Name?.Contains("Honey") == true)
+                if (!__instance.Name?.Contains("Honey") is true)
                     return true;
 
                 if (Mod.instance.ObjectIds == null)
@@ -213,19 +213,15 @@ namespace JsonAssets.Patches
         {
             try
             {
-                foreach (var ring in Mod.instance.MyRings)
+                if (ObjectData.TrackedRings.Contains(index))
                 {
-                    if (ring.GetObjectId() == index)
-                    {
-                        __result = false;
-                        break;
-                    }
+                    __result = false;
+                    return;
                 }
-                if (Mod.instance.ObjectIds.Values.Contains(index))
+                var objData = Mod.instance.Objects.FirstOrDefault((obj) => obj.GetObjectId() == index);
+                if (objData is not null && (!objData.CanSell || objData.HideFromShippingCollection))
                 {
-                    var obj = new List<ObjectData>(Mod.instance.Objects).Find(od => od.GetObjectId() == index);
-                    if (obj != null && (!obj.CanSell || obj.HideFromShippingCollection))
-                        __result = false;
+                    __result = false;
                 }
             }
             catch (Exception ex)

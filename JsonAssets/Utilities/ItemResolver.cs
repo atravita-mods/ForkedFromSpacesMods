@@ -71,7 +71,7 @@ internal static class ItemResolver
 
     private static Dictionary<string, int> GenerateObjectMap()
     {
-        Log.Info("Building map to resolve normal objects.");
+        Log.Trace("Building map to resolve normal objects.");
 
         var objectinfo = Game1.objectInformation ?? Game1.content.Load<Dictionary<int, string>>(Game1ObjectInfo.BaseName);
 
@@ -123,7 +123,7 @@ internal static class ItemResolver
 
     private static Dictionary<string, int> GenerateClothingMap()
     {
-        Log.Info("Building map to resolve Clothing");
+        Log.Trace("Building map to resolve Clothing");
 
         Dictionary<string, int> mapping = new(Game1.clothingInformation.Count)
         {

@@ -75,7 +75,6 @@ namespace JsonAssets
             helper.ConsoleCommands.Add("ja_fix", "Fix IDs once.", this.DoCommands);
 
             helper.Events.Display.MenuChanged += this.OnMenuChanged;
-            helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             helper.Events.GameLoop.SaveCreated += this.OnCreated;
             helper.Events.GameLoop.ReturnedToTitle += this.OnReturnedToTitle;
@@ -1677,6 +1676,8 @@ namespace JsonAssets
                 this.Helper.Reflection.GetField<int>(typeof(Clothing), "_maxPantsValue").SetValue(-1);
             }
 
+            // Call before invoking Ids Assigned since clients may want to edit after.
+            ContentInjector1.Initialize(this.Helper.GameContent);
             Log.Trace("Resolving Crop and Tree product Ids");
             CropData.giantCropMap.Clear();
             foreach (var crop in this.Crops)
@@ -1690,8 +1691,17 @@ namespace JsonAssets
                 fruitTree.ProductId = ItemResolver.GetObjectID(fruitTree.Product);
             }
 
-            // Call before invoking Ids Assigned since clients may want to edit after.
-            ContentInjector1.Initialize(this.Helper.GameContent);
+            if (this.MyRings.Count > 0)
+            {
+                Log.Trace("Indexing rings");
+                ObjectData.TrackedRings.Clear();
+                foreach (var ring in this.MyRings)
+                    ObjectData.TrackedRings.Add(ring.GetObjectId());
+
+                this.Helper.Events.Player.InventoryChanged -= this.OnInventoryChanged;
+                this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+            }
+
             this.Api.InvokeIdsAssigned();
 
             ContentInjector1.InvalidateUsed();
@@ -1750,12 +1760,10 @@ namespace JsonAssets
             if (!e.IsLocalPlayer)
                 return;
 
-            HashSet<int> ringIds = new HashSet<int>(this.MyRings.Select(ring => ring.Id));
-
             for (int i = 0; i < Game1.player.Items.Count; ++i)
             {
                 var item = Game1.player.Items[i];
-                if (item is SObject obj && ringIds.Contains(obj.ParentSheetIndex))
+                if (item is SObject obj && ObjectData.TrackedRings.Contains(obj.ParentSheetIndex))
                 { // NOTE: Rings are not SObjects, so duplicate conversions do not occur.
                     Log.Trace($"Turning a ring-object of {obj.ParentSheetIndex} into a proper ring");
                     Game1.player.Items[i] = new Ring(obj.ParentSheetIndex); // possibly worth considering things like "moving the moddata".
@@ -1852,9 +1860,6 @@ namespace JsonAssets
 
         /// <summary>The vanilla clothing IDs.</summary>
         internal ISet<int> VanillaClothingIds;
-
-        /// <summary>The vanilla boot IDs.</summary>
-        internal ISet<int> VanillaBootIds;
 
         /// <summary>Populate an item's localization fields based on the <see cref="ITranslatableItem.TranslationKey"/> property, if defined.</summary>
         /// <param name="item">The item for which to populate translations.</param>
@@ -2390,7 +2395,7 @@ namespace JsonAssets
                     }
                     else if (obj is IndoorPot pot)
                     {
-                        if (pot.hoeDirt.Value != null && this.FixCrop(pot.hoeDirt.Value.crop))
+                        if (pot.hoeDirt.Value is not null && this.FixCrop(pot.hoeDirt.Value.crop))
                             pot.hoeDirt.Value.crop = null;
                     }
                     else if (obj is Fence fence)
@@ -2471,13 +2476,13 @@ namespace JsonAssets
             {
                 case Horse horse:
                     Log.Trace($"Fixing horse {horse.Name}");
-                    if (this.FixId(this.OldHatIds, this.HatIds, horse.hat.Value?.which, this.VanillaHatIds))
+                    if (this.FixItem(horse.hat.Value))
                         horse.hat.Value = null;
                     break;
 
                 case Child child:
                     Log.Trace($"Fixing child {child.Name}");
-                    if (this.FixId(this.OldHatIds, this.HatIds, child.hat.Value?.which, this.VanillaHatIds))
+                    if (this.FixItem(child.hat.Value))
                         child.hat.Value = null;
                     break;
 
@@ -2530,8 +2535,8 @@ namespace JsonAssets
                         this.FixIdDict(player.basicShipped, removeUnshippable: true);
                         this.FixIdDict(player.mineralsFound);
                         this.FixIdDict(player.recipesCooked);
-                        this.FixIdDict2(player.archaeologyFound);
                         this.FixIdDict2(player.fishCaught);
+                        this.FixIdDict2(player.archaeologyFound);
                         foreach (var dict in player.giftedItems.Values)
                             this.FixIdDict3(dict);
 
@@ -2686,7 +2691,8 @@ namespace JsonAssets
                         obj.Quality--;
                         if (this.FixId(this.OldHatIds, this.HatIds, obj.quality, this.VanillaHatIds))
                             obj.Quality = 0;
-                        else obj.Quality++;
+                        else
+                            obj.Quality++;
                     }
                 }
 
@@ -2711,10 +2717,10 @@ namespace JsonAssets
                     this.FixBuilding(building);
             }
 
-            //if (loc is DecoratableLocation decoLoc)
+            // JA itself doesn't have furniture.
             foreach (var furniture in loc.furniture)
             {
-                if (furniture.heldObject.Value != null && this.FixItem(furniture.heldObject.Value))
+                if (furniture.heldObject.Value is not null && this.FixItem(furniture.heldObject.Value))
                     furniture.heldObject.Value = null;
 
                 if (furniture is StorageFurniture storage)
@@ -2814,14 +2820,18 @@ namespace JsonAssets
             if (this.FixId(this.OldCropIds, this.CropIds, crop.rowInSpriteSheet, this.VanillaCropIds))
                 return true;
 
-            // fix index of harvest
+            // fix index of harvest and netSeedIndex.
             string key = this.CropIds.FirstOrDefault(x => x.Value == crop.rowInSpriteSheet.Value).Key;
             CropData cropData = this.Crops.FirstOrDefault(x => x.Name == key);
             if (cropData is not null) // JA-managed crop
             {
-                Log.Verbose($"Fixing crop product: From {crop.indexOfHarvest.Value} to {cropData.Product}={cropData.ProductId}");
-                crop.indexOfHarvest.Value = cropData.ProductId;
-                this.FixId(this.OldObjectIds, this.ObjectIds, crop.netSeedIndex, this.VanillaObjectIds);
+                if (cropData.ProductId != crop.indexOfHarvest.Value)
+                {
+                    Log.Trace($"Fixing crop product: From {crop.indexOfHarvest.Value} to {cropData.Product}={cropData.ProductId}");
+                    crop.indexOfHarvest.Value = cropData.ProductId;
+                }
+                if (this.FixId(this.OldObjectIds, this.ObjectIds, crop.netSeedIndex, this.VanillaObjectIds))
+                    crop.netSeedIndex.Value = -1; // game will try to infer it again if it's used.
             }
 
             return false;
@@ -2868,12 +2878,11 @@ namespace JsonAssets
 
                         string key = this.FruitTreeIds.FirstOrDefault(x => x.Value == tree.treeType.Value).Key;
                         FruitTreeData treeData = this.FruitTrees.FirstOrDefault(x => x.Name == key);
-                        if (treeData is not null) // Non-JA fruit tree
+                        if (treeData is not null && treeData.ProductId != tree.indexOfFruit.Value) // JA managed fruit tree.
                         {
-                            Log.Verbose($"Fixing fruit tree product: From {tree.indexOfFruit.Value} to {treeData.Product}={treeData.ProductId}");
+                            Log.Trace($"Fixing fruit tree product: From {tree.indexOfFruit.Value} to {treeData.Product}={treeData.ProductId}");
                             tree.indexOfFruit.Value = treeData.ProductId;
                         }
-
                         return false;
                     }
 
@@ -2985,6 +2994,7 @@ namespace JsonAssets
             }
             foreach (int entry in toRemove)
                 dict.Remove(entry);
+
             foreach (var entry in toAdd)
                 dict.Add(entry.Key, entry.Value);
         }
