@@ -3,6 +3,8 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
+using JsonAssets.Utilities;
+
 using JsonAssets.Framework.Internal;
 using StardewValley;
 
@@ -35,7 +37,7 @@ namespace JsonAssets.Data
             StringBuilder str = StringBuilderCache.Acquire();
             foreach (var ingredient in this.Ingredients)
             {
-                int id = Mod.instance.ResolveObjectId(ingredient.Object);
+                int id = ItemResolver.GetObjectID(ingredient.Object);
                 if (id == 0)
                     continue;
                 str.Append(id).Append(' ').Append(ingredient.Count).Append(' ');

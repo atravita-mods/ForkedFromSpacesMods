@@ -23,7 +23,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Lazy<Texture2D> GiantTexture { get; set; }
+        public Lazy<Texture2D>? GiantTexture { get; set; } = null;
 
         public object Product { get; set; }
         public string SeedName { get; set; }
@@ -51,6 +51,11 @@ namespace JsonAssets.Data
 
         internal ObjectData Seed { get; set; }
 
+        [JsonIgnore]
+        internal int ProductId { get; set; } = -1;
+
+        [JsonIgnore]
+        internal static Dictionary<int, Lazy<Texture2D>> giantCropMap = new();
 
         /*********
         ** Public methods
@@ -71,7 +76,7 @@ namespace JsonAssets.Data
             //str += GetProductId() + "/";
             str.AppendJoin(' ', this.Phases).Append('/')
                .AppendJoin(' ', this.Seasons).Append('/')
-               .Append($"{this.GetCropSpriteIndex()}/{Mod.instance.ResolveObjectId(this.Product)}/{this.RegrowthPhase}/")
+               .Append($"{this.GetCropSpriteIndex()}/{this.ProductId}/{this.RegrowthPhase}/")
                .Append(this.HarvestWithScythe ? "1" : "0").Append('/');
 
             if (this.Bonus != null)
