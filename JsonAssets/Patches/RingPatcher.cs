@@ -1,10 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+
 using HarmonyLib;
+
 using Spacechase.Shared.Patching;
+
 using SpaceShared;
+
 using StardewModdingAPI;
-using StardewValley;
+
 using StardewValley.Objects;
 
 namespace JsonAssets.Patches

@@ -143,11 +143,8 @@ namespace JsonAssets.Patches
                 {
                     __result = false;
 
-                    if (fence.BreakTool == FenceBreakToolType.Pickaxe && t is Pickaxe ||
-                         fence.BreakTool == FenceBreakToolType.Axe && t is Axe)
-                    {
-                    }
-                    else
+                    if ((fence.BreakTool != FenceBreakToolType.Pickaxe || t is not Pickaxe) &&
+                         (fence.BreakTool != FenceBreakToolType.Axe || t is not Axe))
                         return false;
 
                     location.playSound(t is Axe ? "axchop" : "hammer");
