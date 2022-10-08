@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+using HarmonyLib;
+
 using JsonAssets.Data;
 using JsonAssets.Framework;
 using JsonAssets.Framework.ContentPatcher;
@@ -52,6 +55,8 @@ namespace JsonAssets
         /// <remarks>This is used to avoid adding items again if the menu was stashed and restored (e.g. by Lookup Anything).</remarks>
         private ShopMenu LastShopMenu;
 
+
+        #region Pack Loading Validation
         private readonly Dictionary<string, IManifest> DupObjects = new();
         private readonly Dictionary<string, IManifest> DupCrops = new();
         private readonly Dictionary<string, IManifest> DupFruitTrees = new();
@@ -62,12 +67,97 @@ namespace JsonAssets
         private readonly Dictionary<string, IManifest> DupPants = new();
         private readonly Dictionary<string, IManifest> DupBoots = new();
         private readonly Regex SeasonLimiter = new("(z(?: spring| summer| fall| winter){2,4})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        #endregion
+
+        #region Deferred Harmony
+
+        private static Harmony? harmony;
+        private static IMonitor ModMonitor;
+
+        private readonly Lazy<bool> FencePatches = new(() =>
+        {
+            if (harmony is not null)
+            {
+                Log.Trace("Applying fence patches");
+                var patcher = new FencePatcher();
+                try
+                {
+                    patcher.Apply(harmony, ModMonitor);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Failed while try to apply fence patches:\n\n{ex}");
+                }
+            }
+            return false;
+        });
+
+        private readonly Lazy<bool> GiantCropPatches = new(() =>
+        {
+            if (harmony is not null)
+            {
+                Log.Trace("Applying Giant Crop patches");
+                var patcher = new GiantCropPatcher();
+                try
+                {
+                    patcher.Apply(harmony, ModMonitor);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Failed while try to apply giant crop patches:\n\n{ex}");
+                }
+            }
+            return false;
+        });
+
+        private readonly Lazy<bool> RingPatches = new(() =>
+        {
+            if (harmony is not null)
+            {
+                Log.Trace("Applying Ring patches");
+                var patcher = new RingPatcher();
+                try
+                {
+                    patcher.Apply(harmony, ModMonitor);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Failed while try to apply ring patches:\n\n{ex}");
+                }
+            }
+            return false;
+        });
+
+        private readonly Lazy<bool> CanBeTrashedPatches = new(() =>
+        {
+            if (harmony is not null)
+            {
+                Log.Trace("Applying Item patches");
+                var patcher = new ItemPatcher();
+                try
+                {
+                    patcher.Apply(harmony, ModMonitor);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Failed while try to apply item patches:\n\n{ex}");
+                }
+            }
+            return false;
+        });
+
+        #endregion
 
         /// <summary>The mod entry point, called after the mod is first loaded.</summary>
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
             Mod.instance = this;
+            Mod.ModMonitor = this.Monitor; // this is used to defer some patches.
             Log.Monitor = this.Monitor;
 
             helper.ConsoleCommands.Add("ja_summary", "Summary of JA ids", this.DoCommands);
@@ -91,16 +181,12 @@ namespace JsonAssets
             TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Characters\Farmer\pants"), 688);
             TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Characters\Farmer\hats"), 80);
 
-            HarmonyPatcher.Apply(this,
+            harmony = HarmonyPatcher.Apply(this,
                 new CropPatcher(),
-                new FencePatcher(),
                 new ForgeMenuPatcher(),
                 new Game1Patcher(),
-                new GiantCropPatcher(),
                 new HoeDirtPatcher(),
-                new ItemPatcher(),
                 new ObjectPatcher(),
-                new RingPatcher(),
                 new ShopMenuPatcher(),
                 new BootPatcher()
             );
@@ -379,7 +465,16 @@ namespace JsonAssets
 
             // save ring
             if (obj.Category == ObjectCategory.Ring)
+            {
+                _ = this.RingPatches.Value;
                 this.MyRings.Add(obj);
+            }
+
+            // patch for can be trashed
+            if (obj.CanTrash)
+            {
+                _ = this.CanBeTrashedPatches.Value;
+            }
 
             // track added
             if (!this.ObjectsByContentPack.TryGetValue(source, out List<string> addedNames))
@@ -991,6 +1086,9 @@ namespace JsonAssets
         /// <param name="translations">The translations from which to get text if <see cref="FenceData.TranslationKey"/> is used.</param>
         public void RegisterFence(IManifest source, FenceData fence, ITranslationHelper translations)
         {
+            // apply fence patches as they may be necessary.
+            _ = this.FencePatches.Value;
+
             // load data
             fence.InvokeOnDeserialized();
             this.PopulateTranslations(fence, translations);
@@ -1121,7 +1219,10 @@ namespace JsonAssets
                     // save crop
                     crop.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/crop.png");
                     if (contentPack.HasFile($"{relativePath}/giant.png"))
+                    {
+                        _ = this.GiantCropPatches.Value;
                         crop.GiantTexture = new(() => contentPack.ModContent.Load<Texture2D>($"{relativePath}/giant.png"));
+                    }
 
                     this.RegisterCrop(contentPack.Manifest, crop, contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/seeds.png"), translations);
                 }
