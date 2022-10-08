@@ -1379,16 +1379,20 @@ namespace JsonAssets
             if (string.IsNullOrEmpty(Constants.CurrentSavePath))
             {
                 Log.Trace("Loading stuff early (for blank save)");
-                this.InitStuff(loadIdFiles: false);
+                this.InitializeAndAssignIds(loadOldIdFiles: false);
             }
         }
 
+        // this does nothing?
         private void OnCreated(object sender, SaveCreatedEventArgs e)
         {
             Log.Trace("Loading stuff early (creation)");
-            //initStuff(loadIdFiles: false);
+            //initStuff(loadOldIdFiles: false);
         }
 
+        /// <summary>
+        /// Checks to see if an ID dictionary has different IDs.
+        /// </summary>
         private bool DoesntNeedDeshuffling(IDictionary<string, int> oldIds, IDictionary<string, int> newIds)
             => oldIds.Count == 0
                 || (oldIds.Count == newIds.Count 
@@ -1399,7 +1403,7 @@ namespace JsonAssets
             if (e.NewStage == StardewModdingAPI.Enums.LoadStage.SaveParsed)
             {
                 //Log.debug("Loading stuff early (loading)");
-                this.InitStuff(loadIdFiles: true);
+                this.InitializeAndAssignIds(loadOldIdFiles: true);
             }
             else if (e.NewStage == StardewModdingAPI.Enums.LoadStage.SaveLoadedLocations)
             {
@@ -1500,7 +1504,7 @@ namespace JsonAssets
             if (!Context.IsMainPlayer && !this.DidInit)
             {
                 Log.Trace("Loading stuff early (MP client)");
-                this.InitStuff(loadIdFiles: false);
+                this.InitializeAndAssignIds(loadOldIdFiles: false);
             }
         }
 
@@ -1603,15 +1607,15 @@ namespace JsonAssets
         #endregion
 
         internal bool DidInit;
-        private void InitStuff(bool loadIdFiles)
+        private void InitializeAndAssignIds(bool loadOldIdFiles)
         {
             if (this.DidInit)
                 return;
             this.DidInit = true;
 
             // load object ID mappings from save folder
-            // If loadIdFiles is "maybe" (null), check the current save path
-            if (loadIdFiles)
+            // If loadOldIdFiles is "maybe" (null), check the current save path // what?
+            if (loadOldIdFiles)
             {
                 IDictionary<TKey, TValue> LoadDictionary<TKey, TValue>(string filename)
                 {
@@ -2822,8 +2826,7 @@ namespace JsonAssets
                 return true;
 
             // fix index of harvest and netSeedIndex.
-            string key = this.CropIds.FirstOrDefault(x => x.Value == crop.rowInSpriteSheet.Value).Key;
-            CropData cropData = this.Crops.FirstOrDefault(x => x.Name == key);
+            CropData cropData = this.Crops.FirstOrDefault(x => crop.rowInSpriteSheet.Value == x.GetCropSpriteIndex());
             if (cropData is not null) // JA-managed crop
             {
                 if (cropData.ProductId != crop.indexOfHarvest.Value)

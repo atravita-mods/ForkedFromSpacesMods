@@ -73,10 +73,11 @@ namespace JsonAssets.Data
         internal string GetCropInformation()
         {
             StringBuilder str = StringBuilderCache.Acquire();
-            //str += GetProductId() + "/";
             str.AppendJoin(' ', this.Phases).Append('/')
                .AppendJoin(' ', this.Seasons).Append('/')
-               .Append($"{this.GetCropSpriteIndex()}/{this.ProductId}/{this.RegrowthPhase}/")
+               .Append(this.GetCropSpriteIndex()).Append('/')
+               .Append(this.ProductId).Append('/')
+               .Append(this.RegrowthPhase).Append('/')
                .Append(this.HarvestWithScythe ? "1" : "0").Append('/');
 
             if (this.Bonus != null)
@@ -86,7 +87,7 @@ namespace JsonAssets.Data
 
             str.Append((this.TrellisCrop ? "true" : "false")).Append('/');
 
-            if (this.Colors.Any())
+            if (this.Colors.Count > 0)
                 str.Append("true ").AppendJoin(' ', this.Colors.Select(color=>$"{color.R} {color.G} {color.B}"));
             else
                 str.Append("false");
