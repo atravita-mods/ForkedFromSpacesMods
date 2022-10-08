@@ -17,7 +17,7 @@ namespace JsonAssets.Framework
     {
         private static readonly Dictionary<string, Action<IAssetData>> Files = new(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly Dictionary<int, FenceData> FenceIndexes = new();
+        internal static readonly Dictionary<int, FenceData> FenceIndexes = new();
 
         /// <summary>
         /// Call after assigning IDs. Populate the content injector's dictionary

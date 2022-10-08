@@ -1689,6 +1689,7 @@ namespace JsonAssets
             foreach (var fruitTree in this.FruitTrees)
             {
                 fruitTree.ProductId = ItemResolver.GetObjectID(fruitTree.Product);
+                FruitTreeData.SaplingIds.Add(fruitTree.GetSaplingId());
             }
 
             if (this.MyRings.Count > 0)

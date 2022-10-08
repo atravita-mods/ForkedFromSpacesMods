@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HarmonyLib;
 using JsonAssets.Data;
+using JsonAssets.Framework;
+
 using Microsoft.Xna.Framework;
 using Spacechase.Shared.Patching;
 using SpaceShared;
@@ -25,18 +27,13 @@ namespace JsonAssets.Patches
         public override void Apply(Harmony harmony, IMonitor monitor)
         {
             harmony.Patch(
-                original: this.RequireMethod<SObject>(nameof(SObject.canBePlacedHere)),
-                prefix: this.GetHarmonyMethod(nameof(Before_CanBePlacedHere))
+                original: this.RequireMethod<SObject>(nameof(SObject.isSapling)),
+                postfix: this.GetHarmonyMethod(nameof(After_IsSapling))
             );
 
             harmony.Patch(
                 original: this.RequireMethod<SObject>(nameof(SObject.checkForAction)),
                 prefix: this.GetHarmonyMethod(nameof(Before_CheckForAction))
-            );
-
-            harmony.Patch(
-                original: this.RequireMethod<SObject>("loadDisplayName"),
-                prefix: this.GetHarmonyMethod(nameof(Before_LoadDisplayName))
             );
 
             harmony.Patch(
@@ -61,7 +58,7 @@ namespace JsonAssets.Patches
 
             harmony.Patch(
                 original: this.RequireMethod<SObject>(nameof(SObject.isPlaceable)),
-                prefix: this.GetHarmonyMethod(nameof(Before_IsPlaceable))
+                postfix: this.GetHarmonyMethod(nameof(After_IsPlaceable))
             );
 
             harmony.Patch(
@@ -75,60 +72,30 @@ namespace JsonAssets.Patches
         /*********
         ** Private methods
         *********/
-        /// <summary>The method to call before <see cref="SObject.canBePlacedHere"/>.</summary>
-        public static bool Before_CanBePlacedHere(SObject __instance, GameLocation l, Vector2 tile, ref bool __result)
+        /// <summary>The method to call before <see cref="SObject.isSapling"/>.</summary>
+        /// <remarks>Ensure that JA saplings are considered saplings.</remarks>
+        public static void After_IsSapling(SObject __instance, ref bool __result)
         {
             try
             {
-                if (!__instance.bigCraftable.Value && Mod.instance.ObjectIds.Values.Contains(__instance.ParentSheetIndex))
+                if (!__result && !__instance.bigCraftable.Value && __instance.GetType() == typeof(SObject) && FruitTreeData.SaplingIds.Contains(__instance.ParentSheetIndex))
                 {
-                    if (__instance.Category == SObject.SeedsCategory)
-                    {
-                        bool isTree = false;
-                        foreach (var tree in Mod.instance.FruitTrees)
-                        {
-                            if (tree.Sapling.Id == __instance.ParentSheetIndex)
-                            {
-                                isTree = true;
-                                break;
-                            }
-                        }
-
-                        if (!l.objects.TryGetValue(tile, out SObject tileObj))
-                            tileObj = null;
-
-                        if (isTree)
-                        {
-                            __result = tileObj == null && !l.isTileOccupiedForPlacement(tile, __instance);
-                            return false;
-                        }
-                        else
-                        {
-                            if (l.isTileHoeDirt(tile) || tileObj is IndoorPot)
-                                __result = !l.isTileOccupiedForPlacement(tile, __instance);
-                            else
-                                __result = false;
-                            return false;
-                        }
-                    }
-                    return true;
+                    __result = true;
                 }
-                else
-                    return true;
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed in {nameof(Before_CanBePlacedHere)} for #{__instance?.ParentSheetIndex} {__instance?.Name}:\n{ex}");
-                return true;
+                Log.Error($"Failed in {nameof(After_IsSapling)} for #{__instance?.ParentSheetIndex} {__instance?.Name}:\n{ex}");
             }
         }
 
         /// <summary>The method to call before <see cref="SObject.checkForAction"/>.</summary>
+        /// <remarks>Game has special handling for chairs we probably don't want for JA items in general.</remarks>
         public static bool Before_CheckForAction(SObject __instance)
         {
             try
             {
-                if (__instance.bigCraftable.Value && Mod.instance.BigCraftableIds.Values.Contains(__instance.ParentSheetIndex) && __instance.name.Contains("Chair"))
+                if (__instance.bigCraftable.Value && __instance.name.Contains("Chair") && Mod.instance.BigCraftableIds.Values.Contains(__instance.ParentSheetIndex))
                     return false;
                 return true;
             }
@@ -139,73 +106,30 @@ namespace JsonAssets.Patches
             }
         }
 
-        /// <summary>The method to call before <see cref="SObject.loadDisplayName"/>.</summary>
-        public static bool Before_LoadDisplayName(SObject __instance, ref string __result)
-        {
-            try
-            {
-                if (!__instance.Name?.Contains("Honey") is true)
-                    return true;
-
-                if (Mod.instance.ObjectIds == null)
-                    return true;
-
-                if (!__instance.bigCraftable.Value && Mod.instance.ObjectIds.Values.Contains(__instance.ParentSheetIndex))
-                {
-                    Game1.objectInformation.TryGetValue(__instance.ParentSheetIndex, out string str);
-                    if (!string.IsNullOrEmpty(str))
-                        __result = str.Split('/')[4];
-                    return false;
-                }
-                else if (__instance.bigCraftable.Value && Mod.instance.BigCraftableIds.Values.Contains(__instance.ParentSheetIndex))
-                {
-                    Game1.bigCraftablesInformation.TryGetValue(__instance.ParentSheetIndex, out string str);
-                    if (!string.IsNullOrEmpty(str))
-                    {
-                        int index = str.LastIndexOf('/');
-                        if (index >= 0)
-                            __result = str[(index + 1)..];
-                    }
-                    return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Failed in {nameof(Before_LoadDisplayName)} for #{__instance?.ParentSheetIndex} {__instance?.Name}:\n{ex}");
-                return true;
-            }
-        }
-
         /// <summary>The method to call before <see cref="SObject.getCategoryName"/>.</summary>
+        /// <remarks>Used for <see cref="ObjectData.CategoryTextOverride"></remarks>
         public static bool Before_GetCategoryName(SObject __instance, ref string __result)
         {
             try
             {
-                ObjectData objData = null;
-                foreach (var obj in Mod.instance.Objects)
+                foreach (ObjectData obj in Mod.instance.Objects)
                 {
                     if (obj.GetObjectId() == __instance.ParentSheetIndex)
                     {
-                        objData = obj;
-                        break;
+                        if (obj.CategoryTextOverride is not null)
+                        {
+                            __result = obj.CategoryTextOverride;
+                            return false;
+                        }
+                        return true;
                     }
                 }
-
-                if (objData?.CategoryTextOverride != null)
-                {
-                    __result = objData.CategoryTextOverride;
-                    return false;
-                }
-
-                return true;
             }
             catch (Exception ex)
             {
                 Log.Error($"Failed in {nameof(Before_GetCategoryName)} for #{__instance?.ParentSheetIndex} {__instance?.Name}:\n{ex}");
-                return true;
             }
+            return true;
         }
 
         /// <summary>The method to call after <see cref="SObject.isIndexOkForBasicShippedCategory"/>.</summary>
@@ -231,33 +155,29 @@ namespace JsonAssets.Patches
         }
 
         /// <summary>The method to call before <see cref="SObject.getCategoryColor"/>.</summary>
+        /// <remarks>Used for <see cref="ObjectData.CategoryColorOverride"/></remarks>
         public static bool Before_GetCategoryColor(SObject __instance, ref Color __result)
         {
             try
             {
-                ObjectData objData = null;
                 foreach (var obj in Mod.instance.Objects)
                 {
                     if (obj.GetObjectId() == __instance.ParentSheetIndex)
                     {
-                        objData = obj;
-                        break;
+                        if (obj.CategoryColorOverride.A != 0)
+                        {
+                            __result = obj.CategoryColorOverride;
+                            return false;
+                        }
+                        return true;
                     }
                 }
-
-                if (objData != null && objData.CategoryColorOverride.A != 0)
-                {
-                    __result = objData.CategoryColorOverride;
-                    return false;
-                }
-
-                return true;
             }
             catch (Exception ex)
             {
                 Log.Error($"Failed in {nameof(Before_GetCategoryColor)} for #{__instance?.ParentSheetIndex} {__instance?.Name}:\n{ex}");
-                return true;
             }
+            return true;
         }
 
         /// <summary>The method to call after <see cref="SObject.canBeGivenAsGift"/>.</summary>
@@ -265,9 +185,9 @@ namespace JsonAssets.Patches
         {
             try
             {
-                if (!__instance.bigCraftable.Value && Mod.instance.ObjectIds.Values.Contains(__instance.ParentSheetIndex))
+                if (__result && !__instance.bigCraftable.Value)
                 {
-                    var obj = new List<ObjectData>(Mod.instance.Objects).Find(od => od.GetObjectId() == __instance.ParentSheetIndex);
+                    var obj = Mod.instance.Objects.FirstOrDefault(od => od.GetObjectId() == __instance.ParentSheetIndex);
                     if (obj?.CanBeGifted == false)
                         __result = false;
                 }
@@ -279,29 +199,35 @@ namespace JsonAssets.Patches
         }
 
         /// <summary>The method to call before <see cref="SObject.isPlaceable"/>.</summary>
-        public static bool Before_IsPlaceable(SObject __instance, ref bool __result)
+        public static void After_IsPlaceable(SObject __instance, ref bool __result)
         {
             if (__instance.bigCraftable.Value)
-                return true;
-
-            if (__instance.Category == SObject.CraftingCategory && Mod.instance.ObjectIds.Values.Contains(__instance.ParentSheetIndex))
             {
-                if (Mod.instance.Fences.All(f => f.CorrespondingObject.Id != __instance.ParentSheetIndex))
-                {
-                    __result = false;
-                    return false;
-                }
+                __result = true;
+                return;
             }
 
-            return true;
+            if (__instance.Category == SObject.CraftingCategory)
+            {
+                if (ContentInjector1.FenceIndexes.ContainsKey(__instance.ParentSheetIndex))
+                {
+                    __result = true;
+                    return;
+                }
+                else if (__result && Mod.instance.ObjectIds.Values.Contains(__instance.ParentSheetIndex))
+                {
+                    __result = false;
+                    return;
+                }
+            }
         }
 
         /// <summary>The method to call before <see cref="SObject.placementAction"/>.</summary>
-        public static bool Before_PlacementAction(SObject __instance, GameLocation location, int x, int y, Farmer who, ref bool __result)
+        public static bool Before_PlacementAction(SObject __instance, GameLocation location, int x, int y, ref bool __result)
         {
-            Vector2 pos = new Vector2(x / 64, y / 64);
-            if (!__instance.bigCraftable.Value && __instance is not Furniture)
+            if (!__instance.bigCraftable.Value && __instance is not Furniture && ContentInjector1.FenceIndexes.ContainsKey(__instance.ParentSheetIndex))
             {
+                Vector2 pos = new(x / 64, y / 64);
                 foreach (var fence in Mod.instance.Fences)
                 {
                     if (__instance.ParentSheetIndex == fence.CorrespondingObject.GetObjectId())

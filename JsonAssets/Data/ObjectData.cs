@@ -67,7 +67,7 @@ namespace JsonAssets.Data
 
         // A list of IDs that match rings for JA.
         [JsonIgnore]
-        internal readonly static HashSet<int> TrackedRings = new();
+        internal static HashSet<int> TrackedRings { get; } = new();
 
         /*********
         ** Public methods
