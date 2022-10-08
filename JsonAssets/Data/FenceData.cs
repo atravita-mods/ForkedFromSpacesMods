@@ -2,10 +2,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
+
 using JsonAssets.Framework;
-using Microsoft.Xna.Framework.Graphics;
+
 using Newtonsoft.Json;
+
 using SpaceShared;
+
 using StardewModdingAPI;
 
 namespace JsonAssets.Data

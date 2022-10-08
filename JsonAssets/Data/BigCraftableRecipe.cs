@@ -47,7 +47,8 @@ namespace JsonAssets.Data
                 throw new InvalidDataException("No valid ingredients could be found, skipping this recipe.");
 
             str.Remove(str.Length-1, 1);
-            str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/true/");
+            str.Append("/what is this for?/")
+                .Append(parent.Id).Append(' ').Append(this.ResultCount).Append("/true/");
             if (this.SkillUnlockName?.Length > 0 && this.SkillUnlockLevel > 0)
                 str.Append(this.SkillUnlockName).Append(' ').Append(this.SkillUnlockLevel);
             else

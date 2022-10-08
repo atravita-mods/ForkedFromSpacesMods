@@ -80,12 +80,18 @@ namespace JsonAssets.Data
                .Append(this.RegrowthPhase).Append('/')
                .Append(this.HarvestWithScythe ? "1" : "0").Append('/');
 
-            if (this.Bonus != null)
-                str.Append($"true {this.Bonus.MinimumPerHarvest} {this.Bonus.MaximumPerHarvest} {this.Bonus.MaxIncreasePerFarmLevel} {this.Bonus.ExtraChance}/");
+            if (this.Bonus is not null)
+            {
+                str.Append("true ")
+                    .Append(this.Bonus.MinimumPerHarvest).Append(' ')
+                    .Append(this.Bonus.MaximumPerHarvest).Append(' ')
+                    .Append(this.Bonus.MaxIncreasePerFarmLevel).Append(' ')
+                    .Append(this.Bonus.ExtraChance).Append('/');
+            }
             else
                 str.Append("false/");
 
-            str.Append((this.TrellisCrop ? "true" : "false")).Append('/');
+            str.Append(this.TrellisCrop ? "true" : "false").Append('/');
 
             if (this.Colors.Count > 0)
                 str.Append("true ").AppendJoin(' ', this.Colors.Select(color=>$"{color.R} {color.G} {color.B}"));

@@ -47,7 +47,8 @@ namespace JsonAssets.Data
                 throw new InvalidDataException("No valid ingredients could be found, skipping this recipe.");
 
             str.Remove(str.Length - 1, 1); // remove excess space at the end.
-            str.Append($"/what is this for?/{parent.Id} {this.ResultCount}/");
+            str.Append("/what is this for?/")
+                .Append(parent.Id).Append(' ').Append(this.ResultCount).Append('/');
 
             if (parent.Category != ObjectCategory.Cooking)
                 str.Append("false/");

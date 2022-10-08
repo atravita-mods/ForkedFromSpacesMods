@@ -79,20 +79,17 @@ namespace JsonAssets.Data
 
         internal string GetObjectInformation()
         {
+            StringBuilder sb = StringBuilderCache.Acquire();
+            sb.Append(this.Name).Append('/').Append(this.Price).Append('/').Append(this.Edibility).Append('/')
+            .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{this.Category} {this.Category:D}").Append('/')
+            .Append(this.LocalizedName()).Append('/').Append(this.LocalizedDescription()).Append('/');
+
             if (this.Edibility != SObject.inedible)
             {
-                StringBuilder sb = StringBuilderCache.Acquire();
-                sb.Append($"{this.Name}/{this.Price}/{this.Edibility}/")
-                .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{this.Category} {this.Category:D}")
-                .Append($"/{this.LocalizedName()}/{this.LocalizedDescription()}/")
-                .Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
-                .Append($"{this.EdibleBuffs.Farming} {this.EdibleBuffs.Fishing} {this.EdibleBuffs.Mining} 0 {this.EdibleBuffs.Luck} {this.EdibleBuffs.Foraging} 0 {this.EdibleBuffs.MaxStamina} {this.EdibleBuffs.MagnetRadius} {this.EdibleBuffs.Speed} {this.EdibleBuffs.Defense} {this.EdibleBuffs.Attack}/{this.EdibleBuffs.Duration}");
-                return StringBuilderCache.GetStringAndRelease(sb);
+                sb.Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
+                    .Append($"{this.EdibleBuffs.Farming} {this.EdibleBuffs.Fishing} {this.EdibleBuffs.Mining} 0 {this.EdibleBuffs.Luck} {this.EdibleBuffs.Foraging} 0 {this.EdibleBuffs.MaxStamina} {this.EdibleBuffs.MagnetRadius} {this.EdibleBuffs.Speed} {this.EdibleBuffs.Defense} {this.EdibleBuffs.Attack}/{this.EdibleBuffs.Duration}");
             }
-            else
-            {
-                return $"{this.Name}/{this.Price}/{this.Edibility}/{(this.Category == ObjectCategory.Artifact ? "Arch" : $"Basic {this.Category:D}")}/{this.LocalizedName()}/{this.LocalizedDescription()}";
-            }
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
 

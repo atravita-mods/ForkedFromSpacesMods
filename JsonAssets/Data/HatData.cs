@@ -2,7 +2,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
+using System.Text;
+
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
+
 using SpaceShared;
 
 namespace JsonAssets.Data
@@ -45,7 +49,16 @@ namespace JsonAssets.Data
 
         internal string GetHatInformation()
         {
-            return $"{this.Name}/{this.LocalizedDescription()}/" + (this.ShowHair ? "true" : "false") + "/" + (this.IgnoreHairstyleOffset ? "true" : "false") + $"/{this.Metadata}/{this.LocalizedName()}";
+            StringBuilder sb = StringBuilderCache.Acquire();
+
+            sb.Append(this.Name).Append('/')
+                .Append(this.LocalizedDescription()).Append('/')
+                .Append(this.ShowHair ? "true" : "false").Append('/')
+                .Append(this.IgnoreHairstyleOffset ? "true" : "false").Append('/')
+                .Append(this.Metadata).Append('/')
+                .Append(this.LocalizedName());
+
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
 
