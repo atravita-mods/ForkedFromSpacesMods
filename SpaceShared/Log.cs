@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
 using StardewModdingAPI;
 
 namespace SpaceShared
@@ -36,6 +38,7 @@ namespace SpaceShared
         /// </summary>
         /// <param name="del">Delegate that provides a string to log.</param>
         [DebuggerHidden]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Verbose(Func<string> del)
         {
             if (Log.Monitor.IsVerbose)

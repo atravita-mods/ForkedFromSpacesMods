@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -67,6 +68,7 @@ namespace JsonAssets
         private readonly Dictionary<string, IManifest> DupPants = new();
         private readonly Dictionary<string, IManifest> DupBoots = new();
         private readonly Regex SeasonLimiter = new("(z(?: spring| summer| fall| winter){2,4})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly ImmutableHashSet<string> seasons = ImmutableHashSet.Create(StringComparer.Ordinal, "spring", "summer", "fall", "winter");
         #endregion
 
         #region Deferred Harmony
@@ -471,7 +473,7 @@ namespace JsonAssets
             }
 
             // patch for can be trashed
-            if (obj.CanTrash)
+            if (obj.CanTrash == false)
             {
                 _ = this.CanBeTrashedPatches.Value;
             }
@@ -561,8 +563,8 @@ namespace JsonAssets
 
             // add purchase requirement for crop seasons
             {
-                string seasonReq = string.Join('/', new[] { "spring", "summer", "fall", "winter" }.Except(crop.Seasons).Select((season) => "z " + season));
-                if (seasonReq != string.Empty)
+                string seasonReq = string.Join('/', this.seasons.Except(crop.Seasons).Select((season) => "z " + season));
+                if (seasonReq.Length != 0)
                 {
                     if (crop.SeedPurchaseRequirements.Any())
                     {
@@ -1168,6 +1170,11 @@ namespace JsonAssets
             return parsed;
         }
 
+        private bool ShouldDisable(DataNeedsId data)
+            => data is null
+                || (data.DisableWithMod is not null && this.Helper.ModRegistry.IsLoaded(data.DisableWithMod))
+                || (data.EnableWithMod is not null && !this.Helper.ModRegistry.IsLoaded(data.EnableWithMod));
+
         /// <summary>Load a content pack.</summary>
         /// <param name="contentPack">The content pack.</param>
         /// <param name="translations">The translations to use for <c>TranslationKey</c> fields, or <c>null</c> to use the content pack's translations.</param>
@@ -1189,7 +1196,7 @@ namespace JsonAssets
 
                     // load data
                     ObjectData obj = contentPack.ReadJsonFile<ObjectData>($"{relativePath}/object.json");
-                    if (obj == null || (obj.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(obj.DisableWithMod)) || (obj.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(obj.EnableWithMod)))
+                    if (this.ShouldDisable(obj))
                         continue;
 
                     // save object
@@ -1213,7 +1220,7 @@ namespace JsonAssets
 
                     // load data
                     CropData crop = contentPack.ReadJsonFile<CropData>($"{relativePath}/crop.json");
-                    if (crop == null || (crop.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(crop.DisableWithMod)) || (crop.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(crop.EnableWithMod)))
+                    if (this.ShouldDisable(crop))
                         continue;
 
                     // save crop
@@ -1240,7 +1247,7 @@ namespace JsonAssets
 
                     // load data
                     FruitTreeData tree = contentPack.ReadJsonFile<FruitTreeData>($"{relativePath}/tree.json");
-                    if (tree == null || (tree.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(tree.DisableWithMod)) || (tree.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(tree.EnableWithMod)))
+                    if (this.ShouldDisable(tree))
                         continue;
 
                     // save fruit tree
@@ -1261,7 +1268,7 @@ namespace JsonAssets
 
                     // load data
                     BigCraftableData craftable = contentPack.ReadJsonFile<BigCraftableData>($"{relativePath}/big-craftable.json");
-                    if (craftable == null || (craftable.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(craftable.DisableWithMod)) || (craftable.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(craftable.EnableWithMod)))
+                    if (this.ShouldDisable(craftable))
                         continue;
 
                     // save craftable
@@ -1290,7 +1297,7 @@ namespace JsonAssets
 
                     // load data
                     HatData hat = contentPack.ReadJsonFile<HatData>($"{relativePath}/hat.json");
-                    if (hat == null || (hat.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(hat.DisableWithMod)) || (hat.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(hat.EnableWithMod)))
+                    if (this.ShouldDisable(hat))
                         continue;
 
                     // save object
@@ -1311,7 +1318,7 @@ namespace JsonAssets
 
                     // load data
                     WeaponData weapon = contentPack.ReadJsonFile<WeaponData>($"{relativePath}/weapon.json");
-                    if (weapon == null || (weapon.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(weapon.DisableWithMod)) || (weapon.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(weapon.EnableWithMod)))
+                    if (this.ShouldDisable(weapon))
                         continue;
 
                     // save object
@@ -1332,7 +1339,7 @@ namespace JsonAssets
 
                     // load data
                     ShirtData shirt = contentPack.ReadJsonFile<ShirtData>($"{relativePath}/shirt.json");
-                    if (shirt == null || (shirt.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(shirt.DisableWithMod)) || (shirt.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(shirt.EnableWithMod)))
+                    if (this.ShouldDisable(shirt))
                         continue;
 
                     // save shirt
@@ -1361,7 +1368,7 @@ namespace JsonAssets
 
                     // load data
                     PantsData pants = contentPack.ReadJsonFile<PantsData>($"{relativePath}/pants.json");
-                    if (pants == null || (pants.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(pants.DisableWithMod)) || (pants.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(pants.EnableWithMod)))
+                    if (this.ShouldDisable(pants))
                         continue;
 
                     // save pants
@@ -1401,7 +1408,7 @@ namespace JsonAssets
 
                     // load data
                     BootsData boots = contentPack.ReadJsonFile<BootsData>($"{relativePath}/boots.json");
-                    if (boots == null || (boots.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(boots.DisableWithMod)) || (boots.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(boots.EnableWithMod)))
+                    if (this.ShouldDisable(boots))
                         continue;
 
                     boots.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/boots.png");
@@ -1422,7 +1429,7 @@ namespace JsonAssets
 
                     // load data
                     FenceData fence = contentPack.ReadJsonFile<FenceData>($"{relativePath}/fence.json");
-                    if (fence == null || (fence.DisableWithMod != null && this.Helper.ModRegistry.IsLoaded(fence.DisableWithMod)) || (fence.EnableWithMod != null && !this.Helper.ModRegistry.IsLoaded(fence.EnableWithMod)))
+                    if (this.ShouldDisable(fence))
                         continue;
 
                     fence.Texture = contentPack.ModContent.Load<IRawTextureData>($"{relativePath}/fence.png");
@@ -1508,6 +1515,12 @@ namespace JsonAssets
             }
             else if (e.NewStage == StardewModdingAPI.Enums.LoadStage.SaveLoadedLocations)
             {
+                if (!Context.IsMainPlayer)
+                {
+                    Log.Trace("Not the main player, do not need to handle deshuffling");
+                    return;
+                }
+
                 if (this.DoesntNeedDeshuffling(this.OldObjectIds, this.ObjectIds)
                     && this.DoesntNeedDeshuffling(this.OldCropIds, this.OldCropIds)
                     && this.DoesntNeedDeshuffling(this.OldFruitTreeIds, this.FruitTreeIds)
@@ -1536,7 +1549,7 @@ namespace JsonAssets
                 Log.Trace("Adding default/leveled recipes");
                 foreach (var obj in this.Objects)
                 {
-                    if (obj.Recipe != null)
+                    if (obj.Recipe is not null)
                     {
                         bool unlockedByLevel = false;
                         if (obj.Recipe.SkillUnlockName?.Length > 0 && obj.Recipe.SkillUnlockLevel > 0)
@@ -1572,7 +1585,7 @@ namespace JsonAssets
                 }
                 foreach (var big in this.BigCraftables)
                 {
-                    if (big.Recipe != null)
+                    if (big.Recipe is not null)
                     {
                         bool unlockedByLevel = false;
                         if (big.Recipe.SkillUnlockName?.Length > 0 && big.Recipe.SkillUnlockLevel > 0)
@@ -2070,7 +2083,7 @@ namespace JsonAssets
 
             data.Sort((dni1, dni2) => string.Compare(dni1.Name, dni2.Name, StringComparison.InvariantCulture));
 
-            Log.Trace($"Assiging {type} ids starting at {starting}: {data.Count} items");
+            Log.Trace($"Assiging {type} texture ids starting at {starting}: {data.Count} items");
 
             Dictionary<string, int> idxs = new Dictionary<string, int>();
 
@@ -2545,27 +2558,8 @@ namespace JsonAssets
 
                     if (obj.heldObject.Value is SObject heldObject)
                     {
-
-                        if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.preservedParentSheetIndex, this.VanillaObjectIds))
-                            obj.preservedParentSheetIndex.Value = -1;
-
-                        if (!this.VanillaObjectIds.Contains(heldObject.ParentSheetIndex)
-                                && this.ObjectIds.TryGetValue(heldObject.Name, out int val))
-                        {
-                            if (val != heldObject.ParentSheetIndex)
-                            {
-                                Log.Trace($"Fixing held object {heldObject.Name} with new id {val} by name at tilelocation {obj.TileLocation}.");
-                                heldObject.ParentSheetIndex = val;
-                            }
-                        }
-                        else if (this.FixId(this.OldObjectIds, this.ObjectIds, obj.heldObject.Value.parentSheetIndex, this.VanillaObjectIds))
+                        if (this.FixItem(heldObject))
                             obj.heldObject.Value = null;
-
-                        if (obj.heldObject.Value is Chest innerChest)
-                        {
-                            this.FixItemList(innerChest.items);
-                            innerChest.clearNulls();
-                        }
                     }
                     break;
             }
@@ -3019,7 +3013,7 @@ namespace JsonAssets
                 }
             }
 
-            Log.Verbose($"Found {count} items in list");
+            Log.Verbose(() => $"Found {count} items in list");
         }
 
         /// <summary>
