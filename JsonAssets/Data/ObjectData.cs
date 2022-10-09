@@ -81,12 +81,12 @@ namespace JsonAssets.Data
         {
             StringBuilder sb = StringBuilderCache.Acquire();
             sb.Append(this.Name).Append('/').Append(this.Price).Append('/').Append(this.Edibility).Append('/')
-            .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{this.Category} {this.Category:D}").Append('/')
-            .Append(this.LocalizedName()).Append('/').Append(this.LocalizedDescription()).Append('/');
+            .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{(this.Edibility != -300 ? this.Category : "Basic")} {this.Category:D}").Append('/')
+            .Append(this.LocalizedName()).Append('/').Append(this.LocalizedDescription());
 
             if (this.Edibility != SObject.inedible)
             {
-                sb.Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
+                sb.Append('/').Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
                     .Append($"{this.EdibleBuffs.Farming} {this.EdibleBuffs.Fishing} {this.EdibleBuffs.Mining} 0 {this.EdibleBuffs.Luck} {this.EdibleBuffs.Foraging} 0 {this.EdibleBuffs.MaxStamina} {this.EdibleBuffs.MagnetRadius} {this.EdibleBuffs.Speed} {this.EdibleBuffs.Defense} {this.EdibleBuffs.Attack}/{this.EdibleBuffs.Duration}");
             }
             return StringBuilderCache.GetStringAndRelease(sb);
