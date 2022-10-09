@@ -328,6 +328,7 @@ namespace JsonAssets
 
                 Log.Info("Loading content packs...");
                 foreach (IContentPack contentPack in this.Helper.ContentPacks.GetOwned())
+                {
                     try
                     {
                         this.LoadData(contentPack);
@@ -336,9 +337,12 @@ namespace JsonAssets
                     {
                         Log.Error($"Exception loading content pack {contentPack.Manifest}: {e1}");
                     }
+                }
+
                 if (Directory.Exists(Path.Combine(this.Helper.DirectoryPath, "ContentPacks")))
                 {
                     foreach (string dir in Directory.EnumerateDirectories(Path.Combine(this.Helper.DirectoryPath, "ContentPacks")))
+                    {
                         try
                         {
                             this.LoadData(dir);
@@ -347,7 +351,9 @@ namespace JsonAssets
                         {
                             Log.Error("Exception loading content pack: " + e2);
                         }
+                    }
                 }
+
                 this.Api.InvokeItemsRegistered();
                 this.ResetAtTitle();
 
@@ -365,7 +371,7 @@ namespace JsonAssets
             // read initial info
             IContentPack temp = this.Helper.ContentPacks.CreateFake(path);
             ContentPackData info = temp.ReadJsonFile<ContentPackData>("content-pack.json");
-            if (info == null)
+            if (info is null)
             {
                 Log.Warn($"\tNo {path}/content-pack.json!");
                 return;

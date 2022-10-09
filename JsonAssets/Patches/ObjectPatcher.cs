@@ -27,6 +27,11 @@ namespace JsonAssets.Patches
         public override void Apply(Harmony harmony, IMonitor monitor)
         {
             harmony.Patch(
+                original: this.RequireMethod<SObject>(nameof(SObject.canBePlacedHere)),
+                postfix: this.GetHarmonyMethod(nameof(After_CanBePlacedHere))
+            );
+
+            harmony.Patch(
                 original: this.RequireMethod<SObject>(nameof(SObject.isSapling)),
                 postfix: this.GetHarmonyMethod(nameof(After_IsSapling))
             );
@@ -68,10 +73,30 @@ namespace JsonAssets.Patches
 
         }
 
-
         /*********
         ** Private methods
         *********/
+
+        /// <summary>The method to call before <see cref="SObject.canBePlacedHere(GameLocation, Vector2)"/>.</summary>
+        /// <remarks>This method doesn't check IsSapling.</remarks>
+        public static void After_CanBePlacedHere(SObject __instance, GameLocation l, Vector2 tile, ref bool __result)
+        {
+            if (__result)
+                return;
+
+            if (FruitTreeData.SaplingIds.Contains(__instance.ParentSheetIndex))
+            {
+                if (!l.isTileOccupiedForPlacement(tile, __instance))
+                {
+                    if (l.CanPlantTreesHere(__instance.ParentSheetIndex, (int)tile.X, (int)tile.Y))
+                        __result = true;
+                    else
+                        __result = l.IsOutdoors;
+                }
+            }
+        }
+
+
         /// <summary>The method to call before <see cref="SObject.isSapling"/>.</summary>
         /// <remarks>Ensure that JA saplings are considered saplings.</remarks>
         public static void After_IsSapling(SObject __instance, ref bool __result)
