@@ -1827,14 +1827,28 @@ namespace JsonAssets
                 this.Helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
             }
 
+            // the game rewrites the display names of anything with honey in the name.
+            BigCraftableData.HasHoneyInName.Clear();
+            ObjectData.HasHoneyInName.Clear();
+
+            foreach (var obj in this.Objects)
+                if (obj.Name.Contains("Honey"))
+                    ObjectData.HasHoneyInName.Add(obj.GetObjectId());
+
+            foreach (var big in this.BigCraftables)
+                if (big.Name.Contains("Honey"))
+                    BigCraftableData.HasHoneyInName.Add(big.GetCraftableId());
+
             this.Api.InvokeIdsAssigned();
 
             ContentInjector1.InvalidateUsed();
+            ContentInjector2.ResetGiftTastes();
+            this.Helper.GameContent.InvalidateCache("Data/NPCGiftTastes");
+            if (this.Helper.GameContent.CurrentLocaleConstant != LocalizedContentManager.LanguageCode.en)
+                this.Helper.GameContent.InvalidateCache($"Data/NPCGiftTastes.{this.Helper.GameContent.CurrentLocale}");
 
             // This happens here instead of with ID fixing because TMXL apparently
             // uses the ID fixing API before ID fixing happens everywhere.
-            // Doing this here prevents some NREs (that don't show up unless you're
-            // debugging for some reason????)
             this.VanillaObjectIds = this.GetVanillaIds(Game1.objectInformation, this.ObjectIds);
             this.VanillaCropIds = this.GetVanillaIds(Game1.content.Load<Dictionary<int, string>>("Data\\Crops"), this.CropIds);
             this.VanillaFruitTreeIds = this.GetVanillaIds(Game1.content.Load<Dictionary<int, string>>("Data\\fruitTrees"), this.FruitTreeIds);

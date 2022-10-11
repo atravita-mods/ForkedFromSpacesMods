@@ -5,7 +5,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
 using SObject = StardewValley.Object;
@@ -19,6 +18,9 @@ namespace JsonAssets.Data
     [DebuggerDisplay("name = {Name}, id = {Id}")]
     public class ObjectData : DataNeedsIdWithTexture, ITranslatableItem
     {
+        [JsonIgnore]
+        internal static HashSet<int> HasHoneyInName { get; } = new();
+
         /*********
         ** Accessors
         *********/

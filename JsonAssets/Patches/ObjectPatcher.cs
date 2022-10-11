@@ -8,6 +8,9 @@ using JsonAssets.Framework;
 
 using Microsoft.Xna.Framework;
 using Spacechase.Shared.Patching;
+
+using SpaceCore.Framework.Extensions;
+
 using SpaceShared;
 using StardewModdingAPI;
 using StardewValley;
@@ -26,6 +29,11 @@ namespace JsonAssets.Patches
         /// <inheritdoc />
         public override void Apply(Harmony harmony, IMonitor monitor)
         {
+            harmony.Patch(
+                original: this.RequireMethod<SObject>("loadDisplayName"),
+                prefix: this.GetHarmonyMethod(nameof(Before_LoadDisplayName))
+                ); ;
+
             harmony.Patch(
                 original: this.RequireMethod<SObject>(nameof(SObject.canBePlacedHere)),
                 postfix: this.GetHarmonyMethod(nameof(After_CanBePlacedHere))
@@ -76,6 +84,38 @@ namespace JsonAssets.Patches
         /*********
         ** Private methods
         *********/
+
+        private static bool Before_LoadDisplayName(SObject __instance, ref string __result)
+        {
+            if (__instance.bigCraftable.Value)
+            {
+                if (BigCraftableData.HasHoneyInName.Contains(__instance.ParentSheetIndex)
+                    && Game1.bigCraftablesInformation.TryGetValue(__instance.ParentSheetIndex, out string data))
+                {
+                    int index = data.LastIndexOf('/');
+                    if (index > 0)
+                    {
+                        __result = data[(index + 1)..];
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (ObjectData.HasHoneyInName.Contains(__instance.ParentSheetIndex)
+                    && Game1.objectInformation.TryGetValue(__instance.ParentSheetIndex, out string data))
+                {
+                    string name = data.GetNthChunk('/', 4).ToString();
+                    if (name.Length != 0)
+                    {
+                        __result = name;
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
 
         /// <summary>The method to call before <see cref="SObject.canBePlacedHere(GameLocation, Vector2)"/>.</summary>
         /// <remarks>This method doesn't check IsSapling.</remarks>

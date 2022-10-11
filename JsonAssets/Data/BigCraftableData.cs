@@ -20,12 +20,16 @@ namespace JsonAssets.Data
     [DebuggerDisplay("name = {Name}, id = {Id}")]
     public class BigCraftableData : DataNeedsIdWithTexture, ITranslatableItem
     {
+        [JsonIgnore]
+        internal static HashSet<int> HasHoneyInName { get; } = new();
+
         /*********
         ** Accessors
         *********/
         [JsonIgnore]
         public IRawTextureData[] ExtraTextures { get; set; }
 
+        [Obsolete($"Use {nameof(ReserveExtraIndexCount)} instead.")]
         public bool ReserveNextIndex { get; set; } = false; // Deprecated
         public int ReserveExtraIndexCount { get; set; } = 0;
 

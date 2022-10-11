@@ -40,31 +40,46 @@ namespace JsonAssets.Framework
                 foreach (string key in obj.GiftTastes.Love)
                 {
                     if (!friendship.TryGetValue(key, out HashSet<string>[] tastes))
-                        tastes = new[] {new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
+                    {
+                        tastes = new[] { new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
+                        friendship[key] = tastes;
+                    }
                     tastes[(int)GiftTasteIndex.Love].Add(obj.GetObjectId().ToString());
                 }
                 foreach (string key in obj.GiftTastes.Like)
                 {
                     if (!friendship.TryGetValue(key, out HashSet<string>[] tastes))
+                    {
                         tastes = new[] { new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
+                        friendship[key] = tastes;
+                    }
                     tastes[(int)GiftTasteIndex.Like].Add(obj.GetObjectId().ToString());
                 }
                 foreach (string key in obj.GiftTastes.Dislike)
                 {
                     if (!friendship.TryGetValue(key, out HashSet<string>[] tastes))
+                    {
                         tastes = new[] { new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
+                        friendship[key] = tastes;
+                    }
                     tastes[(int)GiftTasteIndex.Dislike].Add(obj.GetObjectId().ToString());
                 }
                 foreach (string key in obj.GiftTastes.Hate)
                 {
                     if (!friendship.TryGetValue(key, out HashSet<string>[] tastes))
+                    {
                         tastes = new[] { new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
+                        friendship[key] = tastes;
+                    }
                     tastes[(int)GiftTasteIndex.Hate].Add(obj.GetObjectId().ToString());
                 }
                 foreach (string key in obj.GiftTastes.Neutral)
                 {
                     if (!friendship.TryGetValue(key, out HashSet<string>[] tastes))
+                    {
                         tastes = new[] { new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>(), new HashSet<string>() };
+                        friendship[key] = tastes;
+                    }
                     tastes[(int)GiftTasteIndex.Neutral].Add(obj.GetObjectId().ToString());
                 }
             }    
