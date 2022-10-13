@@ -15,6 +15,8 @@ using SpaceShared;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
+using StardewValley.TerrainFeatures;
+
 using SObject = StardewValley.Object;
 
 namespace JsonAssets.Patches
@@ -95,7 +97,7 @@ namespace JsonAssets.Patches
                     int index = data.LastIndexOf('/');
                     if (index > 0)
                     {
-                        __result = data[(index + 1)..];
+                        __result = data[(index + 1)..]; // big craftables keep their display name as the last field.
                         return false;
                     }
                 }
@@ -105,7 +107,7 @@ namespace JsonAssets.Patches
                 if (ObjectData.HasHoneyInName.Contains(__instance.ParentSheetIndex)
                     && Game1.objectInformation.TryGetValue(__instance.ParentSheetIndex, out string data))
                 {
-                    string name = data.GetNthChunk('/', 4).ToString();
+                    string name = data.GetNthChunk('/', SObject.objectInfoDisplayNameIndex).ToString();
                     if (name.Length != 0)
                     {
                         __result = name;
@@ -128,10 +130,8 @@ namespace JsonAssets.Patches
             {
                 if (!l.isTileOccupiedForPlacement(tile, __instance))
                 {
-                    if (l.CanPlantTreesHere(__instance.ParentSheetIndex, (int)tile.X, (int)tile.Y))
-                        __result = true;
-                    else
-                        __result = l.IsOutdoors;
+                    if (l.CanPlantTreesHere(__instance.ParentSheetIndex, (int)tile.X, (int)tile.Y) || l.IsOutdoors)
+                        __result = FruitTree.IsGrowthBlocked(tile, l); // this sucks. This is a very expensive call.
                 }
             }
         }
