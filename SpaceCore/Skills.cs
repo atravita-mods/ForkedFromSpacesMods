@@ -102,18 +102,25 @@ namespace SpaceCore
         private static Dictionary<long, Dictionary<string, int>> Exp = new();
         internal static List<KeyValuePair<string, int>> NewLevels = new();
 
+        private static IExperienceBarsApi? BarsApi;
+
         internal static void Init(IModEvents events)
         {
             events.GameLoop.SaveLoaded += Skills.OnSaveLoaded;
             events.GameLoop.Saving += Skills.OnSaving;
             events.GameLoop.Saved += Skills.OnSaved;
             events.Display.MenuChanged += Skills.OnMenuChanged;
-            events.Player.Warped += Skills.OnWarped;
-            events.Display.RenderedHud += Skills.OnRenderedHud;
             SpaceEvents.ShowNightEndMenus += Skills.ShowLevelMenu;
             SpaceEvents.ServerGotClient += Skills.ClientJoined;
             Networking.RegisterMessageHandler(Skills.MsgData, Skills.OnDataMessage);
             Networking.RegisterMessageHandler(Skills.MsgExperience, Skills.OnExpMessage);
+
+            if (SpaceCore.Instance.Helper.ModRegistry.IsLoaded("cantorsdust.AllProfessions"))
+                events.Player.Warped += Skills.OnWarped;
+
+            BarsApi = SpaceCore.Instance.Helper.ModRegistry.GetApi<IExperienceBarsApi>("spacechase0.ExperienceBars");
+            if (BarsApi is not null)
+                events.Display.RenderedHud += Skills.OnRenderedHud;
         }
 
         public static void RegisterSkill(Skill skill)
@@ -342,11 +349,9 @@ namespace SpaceCore
         /// <summary>Raised after a player warps to a new location.</summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event arguments.</param>
+        /// <remarks>Used to set all professions for All Professions, matching their code.</remarks>
         private static void OnWarped(object sender, WarpedEventArgs e)
         {
-            if (!SpaceCore.Instance.Helper.ModRegistry.IsLoaded("cantorsdust.AllProfessions"))
-                SpaceCore.Instance.Helper.Events.Player.Warped -= OnWarped;
-
             if (e.IsLocalPlayer)
             {
                 foreach (var skill in Skills.SkillsByName)
@@ -407,7 +412,7 @@ namespace SpaceCore
                     progress = -1;
                 }
 
-                api.DrawExperienceBar(skill.Icon ?? Game1.staminaRect, level, progress, skill.ExperienceBarColor);
+                BarsApi.DrawExperienceBar(skill.Icon ?? Game1.staminaRect, level, progress, skill.ExperienceBarColor);
             }
         }
 
