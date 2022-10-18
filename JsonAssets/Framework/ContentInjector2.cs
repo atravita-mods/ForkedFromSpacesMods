@@ -135,7 +135,7 @@ namespace JsonAssets.Framework
                             {
                                 if (!data.TryGetValue(key, out string oldTastes))
                                 {
-                                    Log.Trace($"NPC {key} doesn't seem to have gift tastes, skipping.");
+                                    Log.Verbose(() => $"NPC {key} doesn't seem to have gift tastes, skipping.");
                                     continue;
                                 }
 
@@ -194,6 +194,7 @@ namespace JsonAssets.Framework
                                     sb.Append(tastearray[8]);
                                 sb.Append('/');
                                 sb.AppendJoin(' ', neutrals);
+                                sb.Append('/');
 
                                 data[key] = StringBuilderCache.GetStringAndRelease(sb);
                             }
