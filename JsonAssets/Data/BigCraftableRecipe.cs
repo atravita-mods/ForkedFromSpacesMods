@@ -35,7 +35,7 @@ namespace JsonAssets.Data
         internal string GetRecipeString(BigCraftableData parent)
         {
             StringBuilder str = StringBuilderCache.Acquire();
-            foreach (var ingredient in this.Ingredients)
+            foreach (BigCraftableIngredient ingredient in this.Ingredients)
             {
                 int id = ItemResolver.GetObjectID(ingredient.Object);
                 if (id == 0)
@@ -53,7 +53,7 @@ namespace JsonAssets.Data
                 str.Append(this.SkillUnlockName).Append(' ').Append(this.SkillUnlockLevel);
             else
                 str.Append("null");
-            if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
+            //if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
                 str.Append('/').Append(parent.LocalizedName());
             return StringBuilderCache.GetStringAndRelease(str);
         }

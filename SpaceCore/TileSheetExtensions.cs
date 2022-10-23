@@ -66,11 +66,11 @@ namespace SpaceCore
         [EventPriority((EventPriority)int.MaxValue)]
         private static void Ready(object sender, AssetReadyEventArgs e)
         {
-            if (ExtendedTextureAssets.TryGetValue(e.NameWithoutLocale.BaseName, out var data))
+            if (ExtendedTextureAssets.TryGetValue(e.NameWithoutLocale.BaseName, out ExtensionData data))
             {
                 ExtendedTextures.Remove(data.BaseTileSheet);
                 data.BaseTileSheet = Game1.content.Load<Texture2D>(e.NameWithoutLocale.BaseName);
-                ExtendedTextures.Add(data.BaseTileSheet, data);
+                ExtendedTextures[data.BaseTileSheet] = data;
             }
         }
 

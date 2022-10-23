@@ -131,7 +131,7 @@ namespace JsonAssets.Patches
                 if (!l.isTileOccupiedForPlacement(tile, __instance))
                 {
                     if (l.CanPlantTreesHere(__instance.ParentSheetIndex, (int)tile.X, (int)tile.Y) || l.IsOutdoors)
-                        __result = FruitTree.IsGrowthBlocked(tile, l); // this sucks. This is a very expensive call.
+                        __result = !FruitTree.IsGrowthBlocked(tile, l); // this sucks. This is a very expensive call.
                 }
             }
         }
