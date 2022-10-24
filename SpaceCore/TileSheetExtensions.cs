@@ -71,6 +71,7 @@ namespace SpaceCore
                 ExtendedTextures.Remove(data.BaseTileSheet);
                 data.BaseTileSheet = Game1.content.Load<Texture2D>(e.NameWithoutLocale.BaseName);
                 ExtendedTextures[data.BaseTileSheet] = data;
+                ExtendedTextureAssets[e.NameWithoutLocale.BaseName] = data;
             }
         }
 
