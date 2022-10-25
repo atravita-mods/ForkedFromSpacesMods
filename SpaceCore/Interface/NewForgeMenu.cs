@@ -521,7 +521,7 @@ namespace SpaceCore.Interface
                                 delayBeforeAnimationStart = 1400 / crystals2 * k
                             });
                         }
-                        if (this.rightIngredientSpot.item != null && (int)this.rightIngredientSpot.item.parentSheetIndex == 74)
+                        if (this.rightIngredientSpot.item != null && this.rightIngredientSpot.item.ParentSheetIndex == 74)
                         {
                             this._sparklingTimer = 900;
                             Rectangle r = this.leftIngredientSpot.bounds;
@@ -661,15 +661,15 @@ namespace SpaceCore.Interface
 
         public virtual int GetForgeCost(Item left_item, Item right_item)
         {
-            if (right_item != null && (int)right_item.parentSheetIndex == 896)
+            if (right_item?.ParentSheetIndex == 896)
             {
                 return 20;
             }
-            if (right_item != null && (int)right_item.parentSheetIndex == 74)
+            if (right_item?.ParentSheetIndex == 74)
             {
                 return 20;
             }
-            if (right_item != null && (int)right_item.parentSheetIndex == 72)
+            if (right_item?.ParentSheetIndex == 72)
             {
                 return 10;
             }

@@ -107,7 +107,7 @@ namespace SpaceCore
                         item.Stack -= amt;
 
                         if ( item.Stack <= 0 )
-                            Game1.player.items[i] = null;
+                            Game1.player.Items[i] = null;
                         if (left <= 0)
                             break;
                     }
