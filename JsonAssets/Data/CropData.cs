@@ -5,7 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
@@ -22,7 +25,7 @@ namespace JsonAssets.Data
         ** Accessors
         *********/
         [JsonIgnore]
-        public Lazy<Texture2D> GiantTexture { get; set; }
+        public Lazy<Texture2D>? GiantTexture { get; set; } = null;
 
         public object Product { get; set; }
         public string SeedName { get; set; }
@@ -50,6 +53,11 @@ namespace JsonAssets.Data
 
         internal ObjectData Seed { get; set; }
 
+        [JsonIgnore]
+        internal int ProductId { get; set; } = -1;
+
+        [JsonIgnore]
+        internal static Dictionary<int, Lazy<Texture2D>> giantCropMap = new();
 
         /*********
         ** Public methods
@@ -64,27 +72,37 @@ namespace JsonAssets.Data
             return this.Id;
         }
 
-        internal StringBuilder GetCropInformation()
+        internal string GetCropInformation()
         {
-            StringBuilder str = new();
-            //str += GetProductId() + "/";
+            StringBuilder str = StringBuilderCache.Acquire();
             str.AppendJoin(' ', this.Phases).Append('/')
                .AppendJoin(' ', this.Seasons).Append('/')
-               .Append($"{this.GetCropSpriteIndex()}/{Mod.instance.ResolveObjectId(this.Product)}/{this.RegrowthPhase}/")
+               .Append(this.GetCropSpriteIndex()).Append('/')
+               .Append(this.ProductId).Append('/')
+               .Append(this.RegrowthPhase).Append('/')
                .Append(this.HarvestWithScythe ? "1" : "0").Append('/');
-            if (this.Bonus != null)
-                str.Append($"true {this.Bonus.MinimumPerHarvest} {this.Bonus.MaximumPerHarvest} {this.Bonus.MaxIncreasePerFarmLevel} {this.Bonus.ExtraChance}/");
-            else
-                str.Append("false/");
-            str.Append((this.TrellisCrop ? "true" : "false")).Append('/');
-            if (this.Colors.Any())
+
+            if (this.Bonus is not null)
             {
-                str.Append("true ").AppendJoin(' ', this.Colors.Select(color=>$"{color.R} {color.G} {color.B}"));
+                str.Append("true ")
+                    .Append(this.Bonus.MinimumPerHarvest).Append(' ')
+                    .Append(this.Bonus.MaximumPerHarvest).Append(' ')
+                    .Append(this.Bonus.MaxIncreasePerFarmLevel).Append(' ')
+                    .Append(this.Bonus.ExtraChance).Append('/');
             }
             else
+                str.Append("false/");
+
+            str.Append(this.TrellisCrop ? "true" : "false").Append('/');
+
+            if (this.Colors.Count > 0)
+                str.Append("true ").AppendJoin(' ', this.Colors.Select(color => $"{color.R} {color.G} {color.B}"));
+            else
                 str.Append("false");
-            return str;
+
+            return StringBuilderCache.GetStringAndRelease(str);
         }
+
 
         /*********
         ** Private methods

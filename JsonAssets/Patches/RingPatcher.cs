@@ -1,10 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+
 using HarmonyLib;
+
 using Spacechase.Shared.Patching;
+
 using SpaceShared;
+
 using StardewModdingAPI;
-using StardewValley;
+
 using StardewValley.Objects;
 
 namespace JsonAssets.Patches
@@ -25,10 +29,11 @@ namespace JsonAssets.Patches
             );
         }
 
+
         /*********
         ** Private methods
         *********/
-        /// <summary>The method to call before <see cref="Ring.loadDisplayFields"/>.</summary>
+        /// <summary>A finalizer for <see cref="Ring.loadDisplayFields"/>.</summary>
         public static Exception Finalize_LoadDisplayFields(Ring __instance, Exception __exception)
         {
             if (__exception is not null)

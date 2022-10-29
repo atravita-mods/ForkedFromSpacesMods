@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_root", "_root", "{622B2762-903D-417C-8E20-810F9ED2731F}"
 	ProjectSection(SolutionItems) = preProject
@@ -176,7 +176,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiniGolfMod", "MiniGolfMod\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FloodedValleyFarm", "FloodedValleyFarm\FloodedValleyFarm.csproj", "{EF733B78-4F0A-46D4-8529-923EEBBFA4DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GradientHairColors", "GradientHairColors\GradientHairColors.csproj", "{1E295971-F8E9-45D6-BDF5-DE76675753FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GradientHairColors", "GradientHairColors\GradientHairColors.csproj", "{1E295971-F8E9-45D6-BDF5-DE76675753FA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DimensionalPockets", "DimensionalPockets\DimensionalPockets.csproj", "{3D194335-89D4-4B5F-82FD-4E326EB2E8BB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControllerRadialKeybindings", "ControllerRadialKeybindings\ControllerRadialKeybindings.csproj", "{D99B6186-A545-4CD1-B422-3C8F6B575E37}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GiantOmelet", "GiantOmelet\GiantOmelet.csproj", "{A3C45306-E621-41F3-9389-E0EA0E4EB934}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -492,6 +498,18 @@ Global
 		{1E295971-F8E9-45D6-BDF5-DE76675753FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E295971-F8E9-45D6-BDF5-DE76675753FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E295971-F8E9-45D6-BDF5-DE76675753FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D194335-89D4-4B5F-82FD-4E326EB2E8BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D194335-89D4-4B5F-82FD-4E326EB2E8BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D194335-89D4-4B5F-82FD-4E326EB2E8BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D194335-89D4-4B5F-82FD-4E326EB2E8BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D99B6186-A545-4CD1-B422-3C8F6B575E37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D99B6186-A545-4CD1-B422-3C8F6B575E37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D99B6186-A545-4CD1-B422-3C8F6B575E37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D99B6186-A545-4CD1-B422-3C8F6B575E37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3C45306-E621-41F3-9389-E0EA0E4EB934}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3C45306-E621-41F3-9389-E0EA0E4EB934}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3C45306-E621-41F3-9389-E0EA0E4EB934}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3C45306-E621-41F3-9389-E0EA0E4EB934}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -522,6 +540,8 @@ Global
 		{104FCF4D-7776-4C16-94CE-EDE8209D6D9F} = {8FEFBE16-BBBC-4EA0-829E-E5DCF15F0DFA}
 		{EF733B78-4F0A-46D4-8529-923EEBBFA4DA} = {8FEFBE16-BBBC-4EA0-829E-E5DCF15F0DFA}
 		{1E295971-F8E9-45D6-BDF5-DE76675753FA} = {8FEFBE16-BBBC-4EA0-829E-E5DCF15F0DFA}
+		{3D194335-89D4-4B5F-82FD-4E326EB2E8BB} = {8FEFBE16-BBBC-4EA0-829E-E5DCF15F0DFA}
+		{D99B6186-A545-4CD1-B422-3C8F6B575E37} = {8FEFBE16-BBBC-4EA0-829E-E5DCF15F0DFA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {38EB01DD-BAE8-4977-9815-463F5F434FBF}
@@ -563,6 +583,7 @@ Global
 		SpaceSharedPatching\SpaceSharedPatching.projitems*{39ee1a29-bcbd-4ba5-867f-1439a9359b0e}*SharedItemsImports = 5
 		SpaceShared\SpaceShared.projitems*{39ee1a29-bcbd-4ba5-867f-1439a9359b0e}*SharedItemsImports = 5
 		SpaceShared\SpaceShared.projitems*{3aeb49fd-d27f-410a-8483-8bb6fc8e51c6}*SharedItemsImports = 5
+		SpaceShared\SpaceShared.projitems*{3d194335-89d4-4b5f-82fd-4e326eb2e8bb}*SharedItemsImports = 5
 		SpaceShared\SpaceShared.projitems*{3da3fb18-ac0c-40f4-b45b-5d13916d032a}*SharedItemsImports = 5
 		SpaceShared\SpaceShared.projitems*{3f979f1d-6d46-45ee-9201-8a4e9864fcbf}*SharedItemsImports = 5
 		SpaceSharedPatching\SpaceSharedPatching.projitems*{41bbd68d-b674-4ddc-b0a4-7e189f13873a}*SharedItemsImports = 5
@@ -599,6 +620,7 @@ Global
 		SpaceShared\SpaceShared.projitems*{992be23f-a878-4788-8009-0aa9b099a707}*SharedItemsImports = 5
 		SpaceSharedPatching\SpaceSharedPatching.projitems*{a20de2a2-91a8-41fd-8cb5-75d0b7ff20f9}*SharedItemsImports = 5
 		SpaceShared\SpaceShared.projitems*{a20de2a2-91a8-41fd-8cb5-75d0b7ff20f9}*SharedItemsImports = 5
+		SpaceShared\SpaceShared.projitems*{a3c45306-e621-41f3-9389-e0ea0e4eb934}*SharedItemsImports = 5
 		SpaceShared\SpaceShared.projitems*{a534ca13-4195-468f-93a6-c579cca46058}*SharedItemsImports = 5
 		SpaceSharedPatching\SpaceSharedPatching.projitems*{a87f5d49-6246-4b14-8363-114dc9335c2c}*SharedItemsImports = 13
 		SpaceShared\SpaceShared.projitems*{aacf284d-8352-4727-9f9e-9916ba2266af}*SharedItemsImports = 5

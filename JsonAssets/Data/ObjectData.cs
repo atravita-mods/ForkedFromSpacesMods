@@ -3,13 +3,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
+
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using SpaceShared;
 using SObject = StardewValley.Object;
-using StardewModdingAPI;
 
 namespace JsonAssets.Data
 {
@@ -18,11 +20,14 @@ namespace JsonAssets.Data
     [DebuggerDisplay("name = {Name}, id = {Id}")]
     public class ObjectData : DataNeedsIdWithTexture, ITranslatableItem
     {
+        [JsonIgnore]
+        internal static HashSet<int> HasHoneyInName { get; } = new();
+
         /*********
         ** Accessors
         *********/
         [JsonIgnore]
-        public IRawTextureData TextureColor { get; set; }
+        public Texture2D TextureColor { get; set; }
 
         /// <inheritdoc />
         public string Description { get; set; }
@@ -64,6 +69,10 @@ namespace JsonAssets.Data
 
         public List<string> ContextTags { get; set; } = new();
 
+        // A list of IDs that match rings for JA.
+        [JsonIgnore]
+        internal readonly static HashSet<int> TrackedRings = new();
+
 
         /*********
         ** Public methods
@@ -75,22 +84,18 @@ namespace JsonAssets.Data
 
         internal string GetObjectInformation()
         {
+            StringBuilder sb = StringBuilderCache.Acquire();
+            sb.Append(this.Name).Append('/').Append(this.Price).Append('/').Append(this.Edibility).Append('/')
+            .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{(this.Edibility != -300 ? this.Category : "Basic")} {this.Category:D}").Append('/')
+            .Append(this.LocalizedName()).Append('/').Append(this.LocalizedDescription());
+
             if (this.Edibility != SObject.inedible)
             {
-                StringBuilder sb = new();
-                sb.Append($"{this.Name}/{this.Price}/{this.Edibility}/")
-                .Append(this.Category == ObjectCategory.Artifact ? "Arch" : $"{this.Category} {this.Category:D}")
-                .Append($"/{this.LocalizedName()}/{this.LocalizedDescription()}/")
-                .Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
-                .Append($"{this.EdibleBuffs.Farming} {this.EdibleBuffs.Fishing} {this.EdibleBuffs.Mining} 0 {this.EdibleBuffs.Luck} {this.EdibleBuffs.Foraging} 0 {this.EdibleBuffs.MaxStamina} {this.EdibleBuffs.MagnetRadius} {this.EdibleBuffs.Speed} {this.EdibleBuffs.Defense} {this.EdibleBuffs.Attack}/{this.EdibleBuffs.Duration}");
-                return sb.ToString();
+                sb.Append('/').Append(this.EdibleIsDrink ? "drink" : "food").Append('/')
+                    .Append($"{this.EdibleBuffs.Farming} {this.EdibleBuffs.Fishing} {this.EdibleBuffs.Mining} 0 {this.EdibleBuffs.Luck} {this.EdibleBuffs.Foraging} 0 {this.EdibleBuffs.MaxStamina} {this.EdibleBuffs.MagnetRadius} {this.EdibleBuffs.Speed} {this.EdibleBuffs.Defense} {this.EdibleBuffs.Attack}/{this.EdibleBuffs.Duration}");
             }
-            else
-            {
-                return $"{this.Name}/{this.Price}/{this.Edibility}/{(this.Category == ObjectCategory.Artifact ? "Arch" : $"Basic {this.Category:D}")}/{this.LocalizedName()}/{this.LocalizedDescription()}";
-            }
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
-
 
         /*********
         ** Private methods
