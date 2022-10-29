@@ -2848,6 +2848,9 @@ namespace JsonAssets
                 {
                     this.FixItemList(storage.heldItems);
                     storage.ClearNulls();
+
+                    if (storage is FishTankFurniture fishTank)
+                        fishTank.ResetFish();
                 }
             }
 
