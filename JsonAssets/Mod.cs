@@ -688,6 +688,14 @@ namespace JsonAssets
             else
                 this.DupFruitTrees[tree.Name] = source;
 
+            if (this.DupObjects.TryGetValue(tree.Sapling.Name, out var oldmanifest))
+            {
+                Log.Error($"{tree.Sapling.Name} previously added by {oldmanifest.UniqueID}, this may cause errors. Tree {tree.Name} by {source.Name} will not be added");
+                return;
+            }
+            else
+                this.DupObjects[tree.Sapling.Name] = source;
+
             // validate
             if (!this.AssertHasName(tree, "fruit tree", source, translations))
                 return;
