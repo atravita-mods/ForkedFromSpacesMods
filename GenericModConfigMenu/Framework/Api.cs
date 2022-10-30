@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
+
 using GenericModConfigMenu.Framework.ModOption;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,6 +24,9 @@ namespace GenericModConfigMenu.Framework
         /// <summary>Open the config UI for a specific mod.</summary>
         private readonly Action<IManifest> OpenModMenuImpl;
 
+        private readonly IManifest mod;
+
+        private readonly Action<string> DeprecationWarner;
 
         /*********
         ** Public methods
@@ -29,10 +34,12 @@ namespace GenericModConfigMenu.Framework
         /// <summary>Construct an instance.</summary>
         /// <param name="configManager">Manages the registered mod config menus.</param>
         /// <param name="openModMenu">Open the config UI for a specific mod.</param>
-        internal Api(ModConfigManager configManager, Action<IManifest> openModMenu)
+        internal Api(IManifest mod, ModConfigManager configManager, Action<IManifest> openModMenu, Action<string> DeprecationWarner)
         {
+            this.mod = mod;
             this.ConfigManager = configManager;
             this.OpenModMenuImpl = openModMenu;
+            this.DeprecationWarner = DeprecationWarner;
         }
 
 
@@ -42,12 +49,15 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void Register(IManifest mod, Action reset, Action save, bool titleScreenOnly = true)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(reset, nameof(reset));
-            this.AssertNotNull(save, nameof(save));
+            mod ??= this.mod;
+            this.AssertNotNull(reset);
+            this.AssertNotNull(save);
 
             if (this.ConfigManager.Get(mod, assert: false) != null)
                 throw new InvalidOperationException($"The '{mod.Name}' mod has already registered a config menu, so it can't do it again.");
+
+            if (this.mod.UniqueID != mod.UniqueID)
+                Log.Trace($"{this.mod.UniqueID} is registering on behalf of {mod.UniqueID}");
 
             this.ConfigManager.Set(mod, new ModConfig(mod, reset, save, titleScreenOnly));
         }
@@ -58,8 +68,8 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void AddSectionTitle(IManifest mod, Func<string> text, Func<string> tooltip = null)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(text, nameof(text));
+            mod ??= this.mod;
+            this.AssertNotNull(text);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
             modConfig.AddOption(new SectionTitleModOption(text, tooltip, modConfig));
@@ -68,8 +78,8 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void AddParagraph(IManifest mod, Func<string> text)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(mod, nameof(text));
+            mod ??= this.mod;
+            this.AssertNotNull(text);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
             modConfig.AddOption(new ParagraphModOption(text, modConfig));
@@ -78,8 +88,8 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void AddImage(IManifest mod, Func<Texture2D> texture, Rectangle? texturePixelArea = null, int scale = Game1.pixelZoom)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(mod, nameof(texture));
+            mod ??= this.mod;
+            this.AssertNotNull(texture);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
             modConfig.AddOption(new ImageModOption(texture, texturePixelArea, scale, modConfig));
@@ -131,8 +141,8 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void AddPage(IManifest mod, string pageId, Func<string> pageTitle = null)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(pageId, nameof(pageId));
+            mod ??= this.mod;
+            this.AssertNotNull(pageId);
 
             this.ConfigManager
                 .Get(mod, assert: true)
@@ -142,8 +152,8 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void AddPageLink(IManifest mod, string pageId, Func<string> text, Func<string> tooltip = null)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(pageId, nameof(pageId));
+            mod ??= this.mod;
+            this.AssertNotNull(pageId);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
             modConfig.AddOption(new PageLinkModOption(pageId, text, tooltip, modConfig));
@@ -163,7 +173,7 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void SetTitleScreenOnlyForNextOptions(IManifest mod, bool titleScreenOnly)
         {
-            this.AssertNotNull(mod, nameof(mod));
+            mod ??= this.mod;
 
             ModConfig config = this.ConfigManager.Get(mod, assert: true);
             config.DefaultTitleScreenOnly = titleScreenOnly;
@@ -172,8 +182,8 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void OnFieldChanged(IManifest mod, Action<string, object> onChange)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(onChange, nameof(onChange));
+            mod ??= this.mod;
+            this.AssertNotNull(onChange);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
             modConfig.ChangeHandlers.Add(onChange);
@@ -182,7 +192,7 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void OpenModMenu(IManifest mod)
         {
-            this.AssertNotNull(mod, nameof(mod));
+            mod ??= this.mod;
 
             this.OpenModMenuImpl(mod);
         }
@@ -190,7 +200,7 @@ namespace GenericModConfigMenu.Framework
         /// <inheritdoc />
         public void Unregister(IManifest mod)
         {
-            this.AssertNotNull(mod, nameof(mod));
+            mod ??= this.mod;
 
             this.ConfigManager.Remove(mod);
         }
@@ -495,10 +505,10 @@ namespace GenericModConfigMenu.Framework
         /// <param name="fieldId">The unique field ID used when raising field-changed events, or <c>null</c> to generate a random one.</param>
         private void AddSimpleOption<T>(IManifest mod, Func<string> name, Func<string> tooltip, Func<T> getValue, Action<T> setValue, string fieldId)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(name, nameof(name));
-            this.AssertNotNull(getValue, nameof(getValue));
-            this.AssertNotNull(setValue, nameof(setValue));
+            mod ??= this.mod;
+            this.AssertNotNull(name);
+            this.AssertNotNull(getValue);
+            this.AssertNotNull(setValue);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
 
@@ -524,10 +534,10 @@ namespace GenericModConfigMenu.Framework
         private void AddNumericOption<T>(IManifest mod, Func<string> name, Func<string> tooltip, Func<T> getValue, Action<T> setValue, T? min, T? max, T? interval, Func<T, string> formatValue, string fieldId)
             where T : struct
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(name, nameof(name));
-            this.AssertNotNull(getValue, nameof(getValue));
-            this.AssertNotNull(setValue, nameof(setValue));
+            mod ??= this.mod;
+            this.AssertNotNull(name);
+            this.AssertNotNull(getValue);
+            this.AssertNotNull(setValue);
 
             ModConfig modConfig = this.ConfigManager.Get(mod, assert: true);
 
@@ -549,10 +559,10 @@ namespace GenericModConfigMenu.Framework
         /// <param name="fieldId">The unique field ID used when raising field-changed events, or <c>null</c> to generate a random one.</param>
         private void AddChoiceOption(IManifest mod, Func<string> name, Func<string> tooltip, Func<string> getValue, Action<string> setValue, string[] allowedValues, Func<string, string> formatAllowedValues, string fieldId)
         {
-            this.AssertNotNull(mod, nameof(mod));
-            this.AssertNotNull(name, nameof(name));
-            this.AssertNotNull(getValue, nameof(getValue));
-            this.AssertNotNull(setValue, nameof(setValue));
+            mod ??= this.mod;
+            this.AssertNotNull(name);
+            this.AssertNotNull(getValue);
+            this.AssertNotNull(setValue);
 
             name ??= () => fieldId;
 
@@ -568,7 +578,7 @@ namespace GenericModConfigMenu.Framework
         [Obsolete("This only exists to support obsolete methods.")]
         private void SubscribeToChange<TValue>(IManifest mod, Action<string, TValue> changeHandler)
         {
-            this.AssertNotNull(changeHandler, nameof(changeHandler));
+            this.AssertNotNull(changeHandler);
 
             this.OnFieldChanged(mod, (fieldId, rawValue) =>
             {
@@ -581,7 +591,7 @@ namespace GenericModConfigMenu.Framework
         /// <param name="value">The parameter value.</param>
         /// <param name="paramName">The parameter name.</param>
         /// <exception cref="ArgumentNullException">The parameter value is null.</exception>
-        private void AssertNotNull(object value, string paramName)
+        private void AssertNotNull(object value, [CallerArgumentExpression("value")] string paramName = "")
         {
             if (value is null)
                 throw new ArgumentNullException(paramName);
@@ -591,7 +601,7 @@ namespace GenericModConfigMenu.Framework
         /// <param name="value">The parameter value.</param>
         /// <param name="paramName">The parameter name.</param>
         /// <exception cref="ArgumentNullException">The parameter value is null.</exception>
-        private void AssertNotNullOrWhitespace(string value, string paramName)
+        private void AssertNotNullOrWhitespace(string value, [CallerArgumentExpression("value")] string paramName = "")
         {
             if (string.IsNullOrWhiteSpace(value))
                 throw new ArgumentNullException(paramName);
