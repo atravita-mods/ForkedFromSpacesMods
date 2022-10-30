@@ -158,6 +158,7 @@ namespace MoonMisadventures.Game
                 whichProduce = this.defaultProduceIndex.Value;
                 if (r.NextDouble() < this.happiness.Value / 150.0 )
                 {
+                    float happinessModifier = ((this.happiness.Value > 200) ? ((float)(int)this.happiness.Value * 1.5f) : ((float)((this.happiness.Value <= 100) ? (this.happiness.Value - 100) : 0)));
                     this.daysSinceLastLay.Value = 0;
                     Game1.stats.ChickenEggsLayed++;
                     double chanceForQuality = this.friendshipTowardFarmer.Value / 1000f - (1f - this.happiness.Value / 225f);
