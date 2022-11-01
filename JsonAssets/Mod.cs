@@ -1817,6 +1817,7 @@ namespace JsonAssets
                 if (crop.GiantTexture is not null)
                     CropData.giantCropMap[crop.ProductId] = crop.GiantTexture;
             }
+            FruitTreeData.SaplingIds.Clear();
             foreach (var fruitTree in this.FruitTrees)
             {
                 fruitTree.ProductId = ItemResolver.GetObjectID(fruitTree.Product);
