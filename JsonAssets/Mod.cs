@@ -174,6 +174,7 @@ namespace JsonAssets
             helper.Events.Multiplayer.PeerContextReceived += this.ClientConnected;
 
             helper.Events.Content.AssetRequested += this.OnAssetRequested;
+            helper.Events.Content.AssetsInvalidated += this.OnAssetInvalidated;
 
             TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"Maps\springobjects"), 16);
             TileSheetExtensions.RegisterExtendedTileSheet(PathUtilities.NormalizeAssetName(@"TileSheets\Craftables"), 32);
@@ -207,6 +208,11 @@ namespace JsonAssets
         {
             ContentInjector1.OnAssetRequested(e);
             ContentInjector2.OnAssetRequested(e);
+        }
+
+        private void OnAssetInvalidated(object sender, AssetsInvalidatedEventArgs e)
+        {
+            ItemResolver.Reset(e.NamesWithoutLocale);
         }
 
         private Api Api;
