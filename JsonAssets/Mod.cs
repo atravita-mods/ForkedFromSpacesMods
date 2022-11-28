@@ -1890,7 +1890,7 @@ namespace JsonAssets
 
             // some places the game doesn't distinguish between normal SObjects and big craftables and just checks by ID. We'll skip these numbers because they may cause problems
             // ie, the preserves jar at least used to accept 812 as roe.
-            int[] bigSkip = type == "big-craftables" ? new[] { 309, 310, 311, 326, 340, 434, 447, 459, 599, 621, 628, 629, 630, 631, 632, 633, 645, 812, 872, 928 } : Array.Empty<int>();
+            int[] bigSkip = type == "big-craftables" ? new[] { 309, 310, 311, 326, 393, 397, 340, 434, 447, 459, 599, 621, 628, 629, 630, 631, 632, 633, 645, 812, 872, 928 } : Array.Empty<int>();
 
             int currId = starting;
             foreach (var d in data)
