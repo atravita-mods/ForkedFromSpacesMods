@@ -544,6 +544,8 @@ If it can be gifted to an NPC it has gift taste support built in. This means `bi
 ```
 An example of a filled out gift taste can be found [here](https://gist.github.com/paradigmnomad/df8686af71ff35428dc37a7db65213bf#gift-tastes). You can delete unused fields within `GiftTastes`.
 
+You can use the string `"Universal"` instead of an NPC's name to give the object a universal reaction.
+
 ### Shops
 Supported for: all content types.
 
