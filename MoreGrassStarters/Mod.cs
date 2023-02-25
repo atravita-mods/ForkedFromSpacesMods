@@ -95,6 +95,7 @@ namespace MoreGrassStarters
                         feature is not CustomGrass
                         && grass.grassType.Value >= this.MinGrassType
                         && grass.grassType.Value <= this.MaxGrassType
+                        && !grass.modData.ContainsKey("atravita.GrowableGiantCrop.GrassType") // exempt grass tracked by shovel mod.
                         && this.HasNearbyCustomGrass(location, tile, 3);
 
                     if (shouldMigrate)
