@@ -58,12 +58,10 @@ namespace JsonAssets.Data
             else
                 str.Append("/null");
 
-            if (LocalizedContentManager.CurrentLanguageCode != LocalizedContentManager.LanguageCode.en)
-                str.Append('/').Append(parent.LocalizedName());
+            str.Append('/').Append(parent.LocalizedName());
 
             return StringBuilderCache.GetStringAndRelease(str);
         }
-
 
         /*********
         ** Private methods

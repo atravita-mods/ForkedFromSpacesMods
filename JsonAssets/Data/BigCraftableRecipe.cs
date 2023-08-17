@@ -3,9 +3,9 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
 using JsonAssets.Utilities;
 
-using JsonAssets.Framework.Internal;
 using StardewValley;
 
 namespace JsonAssets.Data
@@ -57,7 +57,6 @@ namespace JsonAssets.Data
                 str.Append('/').Append(parent.LocalizedName());
             return StringBuilderCache.GetStringAndRelease(str);
         }
-
 
         /*********
         ** Private methods

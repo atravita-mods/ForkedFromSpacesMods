@@ -6,6 +6,9 @@ using SpaceShared;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 
+using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
+
 namespace JsonAssets.Framework
 {
     // This asset editor is for things that need to run later, ie. after

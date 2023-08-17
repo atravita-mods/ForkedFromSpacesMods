@@ -39,6 +39,7 @@ namespace SpaceCore
                 }
 
                 public virtual void DoImmediateProfessionPerk() { }
+                public virtual void UndoImmediateProfessionPerk() { }
 
                 protected Profession(Skill skill, string id)
                 {
@@ -74,6 +75,17 @@ namespace SpaceCore
             public IList<ProfessionPair> ProfessionsForLevels { get; } = new List<ProfessionPair>();
 
             public Color ExperienceBarColor { get; set; }
+
+            public virtual IDictionary<int, IList<string>> GetSkillLevelUpCraftingRecipes(int level)
+            {
+                return new Dictionary<int, IList<string>>();
+            }
+
+            public virtual IDictionary<int, IList<string>> GetSkillLevelUpCookingRecipes(int level)
+            {
+                return new Dictionary<int, IList<string>>();
+            }
+
 
             public virtual List<string> GetExtraLevelUpInfo(int level)
             {
@@ -203,8 +215,7 @@ namespace SpaceCore
                 Skills.Exp.Add(farmer.UniqueMultiplayerID, skillExp);
             }
 
-            if (!skillExp.ContainsKey(skillName))
-                skillExp.Add(skillName, 0);
+            _ = skillExp.TryAdd(skillName, 0);
         }
 
         private static void ClientJoined(object sender, EventArgsServerGotClient args)
@@ -292,6 +303,8 @@ namespace SpaceCore
                 Log.Trace("Saving custom data");
                 Skills.DataApi.WriteSaveData(Skills.DataKey, Skills.Exp);
             }
+
+            SpaceCore.Instance.Helper.Events.GameLoop.Saved -= OnSaved;
         }
 
         /// <summary>Raised after the game finishes writing data to the save file (except the initial save creation).</summary>
@@ -430,6 +443,46 @@ namespace SpaceCore
             }
 
             return null;
+        }
+        internal static bool CanRespecAnyCustomSkill()
+        {
+            foreach (string s in GetSkillList())
+            {
+                if (CanRespecCustomSkill(s))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        internal static bool CanRespecCustomSkill(string skillId)
+        {
+            if (Game1.player.GetCustomSkillLevel(skillId) < 5)
+            {
+                return false;
+            }
+            foreach (KeyValuePair<string, int> newLevel in NewLevels)
+            {
+                if (newLevel.Key == skillId && newLevel.Value == 5 || newLevel.Value == 10)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        internal static List<Response> GetRespecCustomResponses()
+        {
+            List<Response> responses = new List<Response>();
+            foreach (string skill in Skills.GetSkillList())
+            {
+                if (Skills.CanRespecCustomSkill(skill))
+                {
+                    responses.Add(new Response(skill, Skills.GetSkill(skill).GetName()));
+                }
+            }
+            return responses;
         }
     }
 

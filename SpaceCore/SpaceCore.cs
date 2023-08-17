@@ -6,11 +6,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using HarmonyLib;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using Spacechase.Shared.Patching;
 using SpaceCore.Events;
 using SpaceCore.Framework;
+using SpaceCore.Framework.Schedules;
 using SpaceCore.Interface;
 using SpaceCore.Patches;
 using SpaceShared;
@@ -18,7 +20,9 @@ using SpaceShared.APIs;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Menus;
 using StardewValley.Network;
+using StardewValley.Objects;
 
 namespace SpaceCore
 {
@@ -65,7 +69,7 @@ namespace SpaceCore
         /*********
         ** Fields
         *********/
-        private Harmony Harmony;
+        internal Harmony Harmony;
 
         /// <summary>Handles migrating legacy data for a save file.</summary>
         private LegacyDataMigrator LegacyDataMigrator;
@@ -110,10 +114,19 @@ namespace SpaceCore
             helper.Events.GameLoop.Saved += this.OnSaved;
             helper.Events.Display.MenuChanged += this.OnMenuChanged;
 
+            helper.Events.Content.AssetRequested += this.Content_AssetRequested;
+
             SpaceEvents.ActionActivated += this.SpaceEvents_ActionActivated;
+
+            EventPatcher.CustomCommands.Add("damageFarmer", AccessTools.Method(this.GetType(), "DamageFarmerEventCommand"));
+            EventPatcher.CustomCommands.Add("giveHat", AccessTools.Method(this.GetType(), "GiveHatEventCommand"));
+            EventPatcher.CustomCommands.Add("setDating", AccessTools.Method(this.GetType(), "SetDatingEventCommand"));
+
+            SpaceEvents.AfterGiftGiven += this.SpaceEvents_AfterGiftGiven;
 
             Commands.Register();
             TileSheetExtensions.Init();
+            ScheduleExpansion.Init();
 
             var serializerManager = new SerializerManager(helper.ModRegistry);
 
@@ -134,7 +147,8 @@ namespace SpaceCore
                 new SaveGamePatcher(serializerManager),
                 new SerializationPatcher(),
                 new SpriteBatchPatcher(),
-                new UtilityPatcher()//,
+                new UtilityPatcher(),
+                new HoeDirtPatcher(),
 
                 // I've started organizing by purpose instead of class patched
                 //new PortableCarpenterPatcher()
@@ -164,6 +178,95 @@ namespace SpaceCore
             return new Api();
         }
 
+        private static void DamageFarmerEventCommand(Event evt, GameLocation loc, GameTime time, string[] args)
+        {
+            Game1.eventUp = false;
+            try
+            {
+                evt.farmer.takeDamage(int.Parse(args[1]), false, null);
+            }
+            finally
+            {
+                Game1.eventUp = true;
+                evt.CurrentCommand++;
+            }
+        }
+
+        private static void GiveHatEventCommand(Event evt, GameLocation loc, GameTime time, string[] args)
+        {
+            try
+            {
+                Game1.player.addItemByMenuIfNecessary(new Hat(int.Parse(args[1])));
+            }
+            finally
+            {
+                evt.CurrentCommand++;
+            }
+        }
+
+        private static void SetDatingEventCommand(Event evt, GameLocation loc, GameTime time, string[] args)
+        {
+            try
+            {
+                if (!Game1.player.friendshipData.TryGetValue(args[1], out Friendship f))
+                {
+                    Log.Warn("Could not find NPC " + args[1] + " to mark as dating");
+                }
+                else
+                {
+                    f.Status = FriendshipStatus.Dating;
+                }
+            }
+            finally
+            {
+                evt.CurrentCommand++;
+            }
+        }
+
+        // TODO: In 1.6 move to vanilla asset expansion part of the code
+        // Also make it use ItemId instead
+        // Also make it change to use PlayEvent
+        private void SpaceEvents_AfterGiftGiven(object sender, EventArgsGiftGiven e)
+        {
+            var farmer = sender as Farmer;
+            if (farmer != Game1.player) return;
+
+            var dict = Game1.content.Load<Dictionary<string, NpcExtensionData>>("spacechase0.SpaceCore/NpcExtensionData");
+            if (!dict.TryGetValue(e.Npc.Name, out var npcEntry))
+                return;
+
+            if (!npcEntry.GiftEventTriggers.TryGetValue(e.Gift.ParentSheetIndex.ToString(), out string eventStr))
+                return;
+
+            if (Game1.activeClickableMenu is DialogueBox)
+            {
+                Game1.activeClickableMenu = null;
+            }
+            else return; // In case someone else is doing something unusual
+
+            string[] data = eventStr.Split('/');
+
+            var events = Game1.player.currentLocation.GetLocationEvents();
+            int check = Game1.player.currentLocation.checkEventPrecondition(eventStr);
+            if (check != -1)
+            {
+                Game1.player.eventsSeen.Add(Convert.ToInt32(data[0]));
+                Game1.player.currentLocation.startEvent(new Event(events[eventStr], check));
+            }
+        }
+
+        public class NpcExtensionData
+        {
+            public Dictionary<string, string> GiftEventTriggers = new();
+        }
+
+        private void Content_AssetRequested(object sender, AssetRequestedEventArgs e)
+        {
+            if (e.NameWithoutLocale.IsEquivalentTo("spacechase0.SpaceCore/NpcExtensionData"))
+            {
+                e.LoadFrom(() => new Dictionary<string, NpcExtensionData>(), AssetLoadPriority.Low);
+            }
+        }
 
         /*********
         ** Private methods
@@ -205,6 +308,25 @@ namespace SpaceCore
             {
                 Log.Info("Telling EntoaroxFramework to let us handle the serializer");
                 entoaroxFramework.HoistSerializerOwnership();
+            }
+
+            var cp = Helper.ModRegistry.GetApi<IContentPatcherApi>("Pathoschild.ContentPatcher");
+            if (cp != null)
+            {
+                cp.RegisterToken(ModManifest, "CurrentlyInEvent", () =>
+                {
+                    if (!Context.IsWorldReady )
+                        return null;
+
+                    return new string[] { Game1.CurrentEvent != null ? "true" : "false" };
+                });
+                cp.RegisterToken(ModManifest, "CurrentEventId", () =>
+                {
+                    if (!Context.IsWorldReady || Game1.CurrentEvent == null)
+                        return null;
+
+                    return new string[] { Game1.CurrentEvent.id.ToString() };
+                });
             }
         }
 

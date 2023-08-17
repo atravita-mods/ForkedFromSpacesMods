@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceShared;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Characters;
+using StardewValley.Monsters;
 
 namespace CustomNPCFixes
 {
@@ -47,6 +51,19 @@ namespace CustomNPCFixes
 
             // Schedules for new NPCs don't work the first time.
             FixSchedules();
+        }
+
+        class NpcEqualityChecker : IEqualityComparer<NPC>
+        {
+            public bool Equals(NPC x, NPC y)
+            {
+                return x.Name == y.Name;
+            }
+
+            public int GetHashCode([DisallowNull] NPC obj)
+            {
+                return obj.Name.GetHashCode();
+            }
         }
 
         private void SpawnNpcs()

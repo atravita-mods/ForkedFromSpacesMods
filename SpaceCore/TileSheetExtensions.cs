@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using SpaceShared;
+
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+
+#nullable enable
 
 namespace SpaceCore
 {
@@ -26,7 +30,7 @@ namespace SpaceCore
 
             public string AssetPath { get; }
             public int UnitSize { get; }
-            public Texture2D BaseTileSheet { get; set; }
+            public Texture2D? BaseTileSheet { get; set; }
             public List<Texture2D> Extensions { get; } = new();
         }
 
@@ -94,21 +98,21 @@ namespace SpaceCore
 
         public static int GetTileSheetUnitSize(Texture2D tex)
         {
-            return TileSheetExtensions.ExtendedTextures.TryGetValue(tex, out ExtensionData data)
+            return TileSheetExtensions.ExtendedTextures.TryGetValue(tex, out ExtensionData? data)
                 ? data.UnitSize
                 : -1;
         }
 
         public static int GetTileSheetUnitSize(string asset)
         {
-            return TileSheetExtensions.ExtendedTextureAssets.TryGetValue(asset, out ExtensionData data)
+            return TileSheetExtensions.ExtendedTextureAssets.TryGetValue(asset, out ExtensionData? data)
                 ? data.UnitSize
                 : -1;
         }
 
         public static Texture2D GetTileSheet(Texture2D tex, int index)
         {
-            if (!TileSheetExtensions.ExtendedTextures.TryGetValue(tex, out ExtensionData data))
+            if (!TileSheetExtensions.ExtendedTextures.TryGetValue(tex, out ExtensionData? data))
                 return tex;
 
             while (data.Extensions.Count <= index - 1)
@@ -245,7 +249,8 @@ namespace SpaceCore
 
             if (assetData.BaseTileSheet != asset.Data)
             {
-                TileSheetExtensions.ExtendedTextures.Remove(assetData.BaseTileSheet);
+                if (assetData.BaseTileSheet is not null)
+                    TileSheetExtensions.ExtendedTextures.Remove(assetData.BaseTileSheet);
                 TileSheetExtensions.ExtendedTextures.Add(asset.Data, assetData);
                 assetData.BaseTileSheet = asset.Data;
             }
@@ -263,7 +268,7 @@ namespace SpaceCore
             var dataProp = asset.GetType().GetProperty("Data");
             try
             {
-                dataProp.SetValue(asset, TileSheetExtensions.GetTileSheet(oldData, adjustedTarget.TileSheet));
+                dataProp!.SetValue(asset, TileSheetExtensions.GetTileSheet(oldData, adjustedTarget.TileSheet));
 
                 Rectangle r = targetArea.Value;
                 r.Y = adjustedTarget.Y;
@@ -272,7 +277,7 @@ namespace SpaceCore
             }
             finally
             {
-                dataProp.SetValue(asset, oldData);
+                dataProp!.SetValue(asset, oldData);
             }
         }
 
@@ -282,7 +287,10 @@ namespace SpaceCore
         {
             foreach (var asset in TileSheetExtensions.ExtendedTextureAssets)
             {
-                Texture2D oldTexture = asset.Value.BaseTileSheet;
+                Texture2D? oldTexture = asset.Value.BaseTileSheet;
+
+                if (oldTexture is null)
+                    continue;
 
                 try
                 {
@@ -295,7 +303,7 @@ namespace SpaceCore
                     continue;
                 }
 
-                if (asset.Value.BaseTileSheet == null)
+                if (asset.Value.BaseTileSheet is null)
                 {
                     Log.Error("WHAT? null " + asset.Key);
                     TileSheetExtensions.ExtendedTextures.Remove(oldTexture);
@@ -337,10 +345,8 @@ namespace SpaceCore
                     if (asset.AssetNameEquals(extAsset.Key + (i + 2).ToString()))
                         return true;
             }
-
             return false;
         }
-
         public T Load<T>(IAssetInfo asset)
         {
             foreach (KeyValuePair<string, TileSheetExtensions.ExtensionData> extAsset in TileSheetExtensions.ExtendedTextureAssets)
@@ -349,7 +355,6 @@ namespace SpaceCore
                     if (asset.AssetNameEquals(extAsset.Key + (i + 2).ToString()))
                         return (T)(object)extAsset.Value.Extensions[i];
             }
-
             return default;
         }
     } */

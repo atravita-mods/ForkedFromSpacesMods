@@ -1,6 +1,9 @@
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
+using MoreGrassStarters.Framework;
+
 using SpaceShared;
 using SpaceShared.APIs;
 using SpaceShared.Migrations;
@@ -40,9 +43,11 @@ namespace MoreGrassStarters
 
             if (File.Exists(Path.Combine(this.Helper.DirectoryPath, "assets", "grass.png")))
             {
-                GrassStarterItem.Tex2 = helper.Content.Load<Texture2D>("assets/grass.png");
+                GrassStarterItem.Tex2 = helper.ModContent.Load<Texture2D>("assets/grass.png");
             }
         }
+
+        public override object GetApi() => new MoreGrassStartersAPI();
 
 
         /*********
@@ -96,6 +101,9 @@ namespace MoreGrassStarters
                         && grass.grassType.Value >= this.MinGrassType
                         && grass.grassType.Value <= this.MaxGrassType
                         && this.HasNearbyCustomGrass(location, tile, 3);
+
+                    if (grass.modData.ContainsKey("atravita.GrowableGiantCrop.GrassType"))
+                        shouldMigrate = false;
 
                     if (shouldMigrate)
                         location.terrainFeatures[tile] = new CustomGrass(grass.grassType.Value, grass.numberOfWeeds.Value);

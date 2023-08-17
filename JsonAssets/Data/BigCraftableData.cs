@@ -79,7 +79,6 @@ namespace JsonAssets.Data
             return StringBuilderCache.GetStringAndRelease(str);
         }
 
-
         /*********
         ** Private methods
         *********/

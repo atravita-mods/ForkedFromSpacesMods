@@ -1,16 +1,22 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+
 using HarmonyLib;
+
 using JsonAssets.Data;
 using JsonAssets.Framework;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Spacechase.Shared.Patching;
+
 using SpaceShared;
+
 using StardewModdingAPI;
+
 using StardewValley;
 using StardewValley.Tools;
+
 using SObject = StardewValley.Object;
 
 namespace JsonAssets.Patches

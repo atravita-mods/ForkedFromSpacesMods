@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
 using JsonAssets.Framework;
+using JsonAssets.Framework.Internal;
+
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using SpaceShared;
@@ -71,6 +73,7 @@ namespace JsonAssets.Data
         [JsonIgnore]
         internal static HashSet<int> TrackedRings { get; } = new();
 
+
         /*********
         ** Public methods
         *********/
@@ -93,7 +96,6 @@ namespace JsonAssets.Data
             }
             return StringBuilderCache.GetStringAndRelease(sb);
         }
-
 
         /*********
         ** Private methods
